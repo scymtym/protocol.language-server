@@ -1,0 +1,17 @@
+#+TITLE:       protocol.language-server README
+#+AUTHOR:      Jan Moringen
+#+EMAIL:       jmoringe@techfak.uni-bielefeld.de
+#+DESCRIPTION: An implementation of the language server protocol.
+#+KEYWORDS:    common lisp, language server protocol, jsonrpc, IDE
+#+LANGUAGE:    en
+
+#+SEQ_TODO: TODO STARTED | DONE
+
+* TODO Introduction
+
+  The ~protocol.language-server~ systems provides a Common Lisp
+  implementation of the server role of the [[https://microsoft.github.io/language-server-protocol/specification][language server protocol]].
+
+* TODO Tutorial
+
+* TODO Dictionary
