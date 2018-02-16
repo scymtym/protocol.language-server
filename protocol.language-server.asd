@@ -5,11 +5,34 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
 
   :version     (:read-file-form "version-string.sexp")
-  :depends-on  ()
+  :depends-on  ("alexandria"
+                "split-sequence"
+                (:version "let-plus"              "0.2")
+                (:version "utilities.print-items" "0.1")
+
+                (:version "log4cl"                "1.1")
+
+                (:version "cl-json"               "0.5"))
 
   :components  ((:module     "src"
                  :serial     t
-                 :components ()))
+                 :components ((:file       "package")
+                              (:file       "protocol")
+
+                              (:file       "transport") ; TODO separate modules?
+                              (:file       "messages")
+                              (:file       "connection")
+
+                              (:file       "context")
+                              (:file       "context-methods")
+
+                              (:file       "workspace")
+                              (:file       "workspace-methods")
+
+                              (:file       "document")
+                              (:file       "document-methods")
+
+                              (:file       "language-server"))))
 
   :in-order-to  ((test-op (test-op "protocol.language-server/test"))))
 
@@ -20,11 +43,13 @@
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
 
   :version     (:read-file-form "version-string.sexp")
-  :depends-on  ((:version "protocol.language-server" (:read-file-form "version-string.sexp")))
+  :depends-on  ((:version "fiveam"                   "1.3")
+
+                (:version "protocol.language-server" (:read-file-form "version-string.sexp")))
 
   :components  ((:module     "test"
                  :serial     t
-                 :components ()))
+                 :components ((:file "package"))))
 
   :perform     (test-op (operation component)
-                 ))
+                 (uiop:symbol-call '#:protocol.language-server.test '#:run-tests)))
