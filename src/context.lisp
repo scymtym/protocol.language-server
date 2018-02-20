@@ -16,6 +16,18 @@
                     :writer   (setf %workspace)
                     :initform nil)))
 
+;; TODO generic function
+;; TODO or should capabilities be associated to the workspace
+;; TODO should this get the workspace besides the context?
+(defmethod capabilities ((context context))
+  '((:text-document-sync          . 2)  ; TODO doesn't seem to help?
+    (:hover-provider              . t)
+    (:signature-help-provider     . ((:trigger-characters . ("(" " "))))
+    (:completion-provider         . ((:resolve-provider   . t)
+                                     (:trigger-characters . (":"))))
+    (:document-highlight-provider . t)
+    (:rename-provider             . t)))
+
 (defmethod make-workspace ((context   context)
                            (root-uri  t)
                            (root-path t))

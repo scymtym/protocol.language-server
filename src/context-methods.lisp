@@ -18,17 +18,15 @@
   (setf (%workspace object) (make-workspace object #|later process-id|# root-uri root-path
                                             ; later capabilities initialization-options
                                             ))
-  '((:capabilities . ((:text-document-sync          . 2) ; TODO doesn't seem to help?
-                      (:hover-provider              . t)
-                      (:completion-provider         . ((:resolve-provider   . t)
-                                                       (:trigger-characters . (":"))))
-                      (:document-highlight-provider . t)
-                      (:rename-provider             . t)))))
+  ;; Compute capabilities and send as reply.
+  `((:capabilities . ,(capabilities object))))
 
+;; TODO what is this supposed to do?
 (defmethod process-method ((object context)
                            (method (eql :initialized))
                            &key))
 
+;; TODO what is this supposed to do?
 (defmethod process-method ((object context)
                            (method (eql :shutdown))
                            &key))
