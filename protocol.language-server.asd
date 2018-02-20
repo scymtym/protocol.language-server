@@ -34,7 +34,13 @@
                               (:file       "document")
                               (:file       "document-methods")
 
-                              (:file       "language-server"))))
+                              (:file       "language-server")))
+
+                (:module     "methods"
+                 :pathname   "src/methods"
+                 :serial     t
+                 :components ((:file       "package")
+                              (:file       "protocol"))))
 
   :in-order-to  ((test-op (test-op "protocol.language-server/test"))))
 
