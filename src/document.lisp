@@ -52,6 +52,26 @@
             :while next
             :do (vector-push-extend next newlines)))))
 
+(defmethod update* ((document document)
+                    (range    text.source-location:range)
+                    (new-text string))
+  (let* ((text        (text document))
+         (start-index (text.source-location:index (text.source-location::attach-text (text.source-location:start range) text)))
+         (end-index   (text.source-location:index (text.source-location::attach-text (text.source-location:end range)   text))))
+    (log:info "updated" start-index end-index new-text)
+    ;; TODO do this destructively?
+    (setf (%text document)
+          (concatenate 'string
+                       (subseq text 0 start-index)
+                       new-text
+                       (subseq text end-index)))))
+
+(defmethod update* ((document document)
+                    (range    null)
+                    (new-text string))
+  (setf (%text document) new-text))
+
+;; TODO remove this. renamed update* -> update
 (defmethod update ((document    document)
                    (start-index integer)
                    (end-index   integer)

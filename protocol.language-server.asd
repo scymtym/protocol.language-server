@@ -12,6 +12,8 @@
 
                 (:version "log4cl"                "1.1")
 
+                (:version "text.source-location"  "0.1")
+
                 (:version "cl-json"               "0.5"))
 
   :components  ((:module     "src"

@@ -22,14 +22,9 @@
                            content-changes
                            version)
   (let+ (((&flet apply-change (change)
-            (let+ (((text (&optional start-line start-column end-line end-column) length)
+            (let+ (((text range &ign)
                     (parse-text-document-content-change change)))
-              (update object
-                      (when (and start-line start-column)
-                        (position->index object start-line start-column))
-                      (when (and end-line end-column)
-                        (position->index object end-line end-column))
-                      text)))))
+              (update* object range text)))))
     (map nil #'apply-change content-changes)
     (setf (%version object) version)))
 
