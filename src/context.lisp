@@ -11,7 +11,7 @@
                     :reader   connection)
    (workspace-class :initarg  :workspace-class
                     :reader   workspace-class
-                    :initform 'workspace)
+                    :initform 'standard-workspace)
    (workspace       :reader   workspace
                     :writer   (setf %workspace)
                     :initform nil)))
@@ -26,6 +26,7 @@
     (:completion-provider         . ((:resolve-provider   . t)
                                      (:trigger-characters . (":"))))
     (:document-highlight-provider . t)
+    (:code-action-provider        . t)
     (:rename-provider             . t)))
 
 (defmethod make-workspace ((context   context)
