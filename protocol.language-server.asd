@@ -18,7 +18,8 @@
 
   :components  ((:module     "src"
                  :depends-on ("connection"
-                              "protocol")
+                              "protocol"
+                              "methods")
                  :serial     t
                  :components ((:file       "package")
                               (:file       "protocol")
