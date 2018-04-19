@@ -6,42 +6,44 @@
 
 (cl:in-package #:protocol.language-server)
 
-(defclass workspace (print-items:print-items-mixin)
-  ((root-uri       :initarg  :root-uri
-                   :reader   root-uri)
-   (root-path      :initarg  :root-path
-                   :reader   root-path)
-   (document-class :initarg  :document-class
-                   :reader   document-class
-                   :initform 'document)
-   (documents      :reader   %documents
-                   :initform (make-hash-table :test #'equal)))
-  (:default-initargs
-   :root-uri  (error "missing required initarg :root-uri")
-   :root-path (error "missing required initarg :root-path")))
+;;; `workspace'
 
-(defmethod print-items:print-items append ((object workspace))
-  `((:root-uri       ,(root-uri object))
-    (:document-count ,(document-count object) " ~D document~:P"
-                     ((:after :root-uri)))))
+(defclass workspace ()
+  ())
 
-(defmethod document-count ((container workspace))
+;;; `document-container-mixin'
+
+(defclass document-container-mixin ()
+  ((documents :reader   %documents
+              :initform (make-hash-table :test #'equal))))
+
+(defmethod print-items:print-items append ((object document-container-mixin))
+  `((:document-count ,(document-count object) " ~D document~:P")))
+
+(defmethod document-count ((container document-container-mixin))
   (hash-table-count (%documents container)))
 
-(defmethod find-document ((uri string) (container workspace))
+(defmethod find-document ((uri string) (container document-container-mixin))
   (gethash uri (%documents container)))
 
 (defmethod (setf find-document) ((new-value t)
                                  (uri       string)
-                                 (container workspace))
+                                 (container document-container-mixin))
   (setf (gethash uri (%documents container)) new-value))
 
 (defmethod (setf find-document) ((new-value (eql nil))
                                  (uri       string)
-                                 (container workspace))
+                                 (container document-container-mixin))
   (remhash uri (%documents container)))
 
-(defmethod make-document ((container workspace)
+;;; `document-class-mixin'
+
+(defclass document-class-mixin ()
+  ((document-class :initarg  :document-class
+                   :reader   document-class
+                   :initform 'document)))
+
+(defmethod make-document ((container document-class-mixin)
                           (language  t)
                           (version   t)
                           (text      t))
@@ -49,3 +51,20 @@
                  :language language
                  :version  version
                  :text     text))
+
+;;; `standard-workpace'
+
+(defclass standard-workspace (workspace
+                              document-container-mixin
+                              document-class-mixin
+                              print-items:print-items-mixin)
+  ((root-uri  :initarg  :root-uri
+              :reader   root-uri)
+   (root-path :initarg  :root-path
+              :reader   root-path))
+  (:default-initargs
+   :root-uri  (error "missing required initarg :root-uri")
+   :root-path (error "missing required initarg :root-path")))
+
+(defmethod print-items:print-items append ((object standard-workspace))
+  `((:root-uri ,(root-uri object) "~A" ((:before :document-count)))))

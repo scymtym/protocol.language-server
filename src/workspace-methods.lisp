@@ -21,30 +21,34 @@
                                      (method    (eql :didopen))
                                      &key
                                      text-document)
-  (let+ (((&values uri version) (parse-text-document text-document))
+  (let+ (((&values uri version) (proto:parse-text-document text-document))
          (language-id (assoc-value text-document :language-id))
          (language    (make-keyword (string-upcase language-id)))
          (text        (assoc-value text-document :text)))
-    (log:info "new document" uri version text)
-    (setf (find-document uri object)
-          (make-document object language version text))))
+    (log:info "new document" uri language version text)
+    (handler-bind ((diagnostic (lambda (condition) ; TODO hack
+                                 (setf (%uri condition) uri))))
+      (setf (find-document uri object)
+            (make-document object language version text)))))
 
 (defmethod process-interface-method ((object    workspace)
                                      (interface (eql :textdocument))
                                      (method    (eql :didclose))
                                      &key
                                      text-document)
-  (let ((uri (parse-text-document text-document)))
+  (let ((uri (proto:parse-text-document text-document)))
     (setf (find-document uri object) nil)))
 
 (defmethod process-interface-method ((object    workspace)
                                      (interface (eql :textdocument))
                                      (method    t)
                                      &rest args &key text-document)
-  (let+ (((&values uri version) (parse-text-document text-document))
+  (let+ (((&values uri version) (proto:parse-text-document text-document))
          (document (find-document uri object)))
-    (apply #'process-method document method
-           :version version (remove-from-plist args :text-document))))
+    (handler-bind ((diagnostic (lambda (condition)
+                                 (setf (%uri condition) uri))))
+      (apply #'process-method document method
+             :version version (remove-from-plist args :text-document)))))
 
 ;;; Workspace methods
 
@@ -68,4 +72,9 @@
                            &key
                            command
                            arguments)
-  (log:info "Executing command ~S ~S" command arguments))
+  (log:info "~@<~A is executing command ~S ~S~@:>" object command arguments)
+  (if-let ((command (find-symbol (string-upcase command)
+                                 (find-package '#:keyword))))
+    (apply #'protocol.language-server.methods:execute-command
+           object command arguments)
+    (error "No such command: ~A" command)))
