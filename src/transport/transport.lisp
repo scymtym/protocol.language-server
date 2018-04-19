@@ -4,7 +4,7 @@
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
-(cl:in-package #:protocol.language-server)
+(cl:in-package #:protocol.language-server.transport)
 
 (defconstant +cr+ 13)
 
@@ -16,12 +16,11 @@
 
 (defun parse-header-fields (fields)
   (loop :for field :in fields
-     :collect (let+ ((string (sb-ext:octets-to-string field :external-format :ascii))
-                     ((name value) (split-sequence #\: string)))
-                (cons name (string-left-trim '(#\Space) value)))))
+        :collect (let+ ((string (sb-ext:octets-to-string field :external-format :ascii))
+                        ((name value) (split-sequence #\: string)))
+                   (cons name (string-left-trim '(#\Space) value)))))
 
-;; TODO separate package?
-(defun transport/read-request (stream)
+(defun read-request (stream)
   (prog ((header-fields '())
          (header-field  (make-array 0
                                     :element-type '(unsigned-byte 8)
@@ -61,7 +60,7 @@
        (read-sequence buffer stream)
        (return (values (sb-ext:octets-to-string buffer) fields)))))
 
-(defun transport/write-response (stream content)
+(defun write-response (stream content)
   ;; Write header
   (write-string "Content-Length: " stream)
   (write (length content) :stream stream)
