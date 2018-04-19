@@ -17,13 +17,13 @@
                 (:version "cl-json"               "0.5"))
 
   :components  ((:module     "src"
+                 :depends-on ("connection")
                  :serial     t
                  :components ((:file       "package")
                               (:file       "protocol")
 
                               (:file       "transport") ; TODO separate modules?
                               (:file       "messages")
-                              (:file       "connection")
 
                               (:file       "context")
                               (:file       "context-methods")
@@ -36,6 +36,13 @@
 
                               (:file       "language-server")))
 
+                (:module     "connection"
+                 :pathname   "src/connection"
+                 :depends-on ("transport")
+                 :serial     t
+                 :components ((:file       "package")
+                              (:file       "util")
+                              (:file       "connection")))
                 (:module     "methods"
                  :pathname   "src/methods"
                  :serial     t
