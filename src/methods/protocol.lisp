@@ -6,6 +6,30 @@
 
 (cl:in-package #:protocol.language-server.methods)
 
+;;; Workspace methods
+
+;; TODO make a `document-version' or `versioned-document-name' comprising uri and version
+(defgeneric did-open (workspace uri version language text))
+
+(defgeneric did-close (workspace document))
+
+(defgeneric did-change-configuration (workspace))
+
+(defgeneric did-change-watched-files (workspace))
+
+(defgeneric symbol-information (workspace query))
+
+(defgeneric edit (workspace edits)
+  (:documentation
+   ""))
+
+(defgeneric execute-command (workspace command &rest arguments)
+  (:method ((workspace t) (command t) &rest arguments)
+    (declare (ignore arguments))
+    (error "No such command: ~S" command))
+  (:documentation
+   ""))
+
 ;;; Document methods
 
 (defgeneric will-save (workspace document)
@@ -36,11 +60,15 @@
   (:documentation
    ""))
 
-(defgeneric highlight-TODO (workspace document version position)
+(defgeneric highlight-in-document (workspace document version position)
   (:documentation
    ""))
 
 (defgeneric symbols (workspace document)
+  (:documentation
+   ""))
+
+(defgeneric code-actions (workspace document range context)
   (:documentation
    ""))
 
@@ -49,3 +77,13 @@
    "
 
 Workspace-wide."))
+
+;;;
+
+(defgeneric publish-diagnostics (document diagnostics))
+
+(defmethod publish-diagnostics (document diagnostics)
+  (signal (find-symbol "DIAGNOSTIC" (find-package "PROTOCOL.LANGUAGE-SERVER")) ; TODO
+          :diagnostics (alexandria:ensure-list diagnostics)))
+
+;;;

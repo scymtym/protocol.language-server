@@ -6,7 +6,20 @@
 
 (cl:defpackage #:protocol.language-server.methods
   (:use
-   #:cl)
+   #:cl
+   #:let-plus)
+
+  ;; Workspace methods
+  (:export
+   #:did-open
+   #:did-close
+
+   #:did-change-configuration
+   #:did-change-watched-files
+
+   #:edit
+
+   #:execute-command)
 
   ;; Document methods
   (:export
@@ -18,7 +31,12 @@
    #:hover
    #:definition
    #:references
-   #:highlight-TODO
+   #:highlight-in-document
    #:symbols
 
-   #:rename))
+   #:code-actions
+   #:rename)
+
+  ;; Experimental
+  (:export
+   #:publish-diagnostic))
