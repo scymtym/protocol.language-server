@@ -1,4 +1,4 @@
-;;;; document-methods.lisp --- TODO.
+;;;; document-methods.lisp --- Adapters for methods of the TextDocument interface.
 ;;;;
 ;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
 ;;;;
@@ -119,8 +119,16 @@
                            &key
                            position
                            new-name)
-  (let ((position (text.source-location::attach-text
-                   (proto:parse-position position) (text object))))
+  (let* ((position (text.source-location::attach-text
+                    (proto:parse-position position) (text object)))
+         #+TODO-later (edits    (protocol.language-server.methods:rename
+                    nil object position new-name)))
     ;; /workspace-wide/ rename
     (protocol.language-server.methods:rename
-     nil object position new-name)))
+     nil object position new-name)
+    #+TODO-later `((:document-changes . ,(map 'vector (compose #'protocol.language-server.protocol::unparse-text-document-edit
+                                                  (lambda (edit)
+                                                    (protocol.language-server.protocol::make-text-document-edit
+                                                     *uri* *version*
+                                                     edits)))
+                                 (list document))))))

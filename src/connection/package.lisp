@@ -10,6 +10,10 @@
    #:alexandria
    #:let-plus)
 
+  (:shadow
+   #:error
+   #:method)
+
   (:local-nicknames
    (#:transport #:protocol.language-server.transport))
 

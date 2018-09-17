@@ -12,6 +12,10 @@
   (:documentation
    "TODO"))
 
+(defgeneric capabilities (context)
+  (:documentation
+   "Return capabilities of CONTEXT."))
+
 (defgeneric workspace (context)
   (:documentation
    "TODO"))

@@ -1,4 +1,4 @@
-;;;; transport.lisp --- TODO.
+;;;; transport.lisp --- Sending and receiving JSONPRC messages.
 ;;;;
 ;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
 ;;;;
@@ -20,7 +20,7 @@
                         ((name value) (split-sequence #\: string)))
                    (cons name (string-left-trim '(#\Space) value)))))
 
-(defun read-request (stream)
+(defun read-message (stream)
   (prog ((header-fields '())
          (header-field  (make-array 0
                                     :element-type '(unsigned-byte 8)
@@ -60,7 +60,7 @@
        (read-sequence buffer stream)
        (return (values (sb-ext:octets-to-string buffer) fields)))))
 
-(defun write-response (stream content)
+(defun write-message (stream content)
   ;; Write header
   (write-string "Content-Length: " stream)
   (write (length content) :stream stream)

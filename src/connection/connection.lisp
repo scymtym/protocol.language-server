@@ -14,15 +14,15 @@
            :type     (satisfies output-stream-p)
            :reader   output))
   (:default-initargs
-   :input  (error "missing initarg :input")
-   :output (error "missing initarg :output")))
+   :input  (cl:error "missing initarg :input")
+   :output (cl:error "missing initarg :output")))
 
 (defun make-connection (input output)
   (make-instance 'connection :input input :output output))
 
 ;; TODO this can be a request or a notification
 (defmethod read-request ((connection connection))
-  (let* ((raw       (transport:read-request (input connection)))
+  (let* ((raw       (transport:read-message (input connection)))
          (request   (json:decode-json-from-string raw))
 
          (id        (assoc-value request :id))
@@ -39,7 +39,7 @@
     (log:info "~@<<= [~D] Response~@:_~
                ~2@T~@<~/protocol.language-server.connection::print-maybe-alist/~:>~:>"
               id payload)
-    (transport:write-response (output connection) raw)))
+    (transport:write-message (output connection) raw)))
 
 (defmethod write-response ((connection connection) (id t) (payload condition))
   (let* ((message  (princ-to-string payload))
@@ -50,7 +50,7 @@
     (log:info "~@<<= [~D] Error Response~@:_~
                ~2@T~@<~/protocol.language-server.connection::print-maybe-alist/~:>~:>"
               id payload)
-    (transport:write-response (output connection) raw)))
+    (transport:write-message (output connection) raw)))
 
 (defmethod write-notification ((connection connection) (method string) (payload t))
   (let* ((notification `((:jsonrpc . "2.0")
@@ -60,7 +60,7 @@
     (log:info "~@<<=     Notification ~A~@:_~
                ~2@T~@<~/protocol.language-server.connection::print-maybe-alist/~:>~:>"
               method payload)
-    (transport:write-response (output connection) raw)))
+    (transport:write-message (output connection) raw)))
 
 ;;; Utilities
 
@@ -68,4 +68,3 @@
   `((:jsonrpc . "2.0")
     (:id      . ,id)
     ,body))
-

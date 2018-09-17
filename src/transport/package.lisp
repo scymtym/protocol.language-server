@@ -12,5 +12,8 @@
    #:let-plus)
 
   (:export
-   #:read-request
-   #:write-response))
+   #:read-message
+   #:write-message)
+
+  (:documentation
+   "Functions for sending and receiving JSONRPC messages."))

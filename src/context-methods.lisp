@@ -19,21 +19,17 @@
                                             ; later capabilities initialization-options
                                             ))
   ;; Compute capabilities and send as reply.
-  `((:capabilities . ,(capabilities object))))
+  `((:capabilities . ,(capabilities object)
+                   #+TODO (proto::unparse-server-capabilities
+                           (capabilities object)))))
 
 ;; TODO what is this supposed to do?
-(defmethod process-method ((object context)
-                           (method (eql :initialized))
-                           &key))
+(defmethod process-method ((object context) (method (eql :initialized)) &key))
 
 ;; TODO what is this supposed to do?
-(defmethod process-method ((object context)
-                           (method (eql :shutdown))
-                           &key))
+(defmethod process-method ((object context) (method (eql :shutdown)) &key))
 
-(defmethod process-method ((object context)
-                           (method (eql :exit))
-                           &key)
+(defmethod process-method ((object context) (method (eql :exit)) &key)
   :exit)
 
 ;;; Dispatching to workspace, etc.
@@ -52,6 +48,7 @@
       ((eq interface/symbol :$) ; TODO used for cancel?
        (error "No implemented"))
       ((and interface/symbol method/symbol)
+       (log:warn interface/symbol method/symbol args)
        (apply #'process-interface-method
               object interface/symbol method/symbol args))
       (method/symbol
@@ -66,3 +63,9 @@
   (unless (workspace object)
     (error "~@<Workspace not yet initialized for ~A.~@:>" object))
   (apply #'process-interface-method (workspace object) interface method args))
+
+(defmethod process-interface-method ((object    context)
+                                     (interface (eql :completionitem))
+                                     (method    (eql :resolve))
+                                     &rest item)
+  (plist-alist item))

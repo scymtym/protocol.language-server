@@ -29,6 +29,18 @@
 
    #:unparse-edit)
 
+  ;; Message
+  (:export
+   #:message-action-item
+   #:title
+
+   #:message
+   #:kind
+   #:message
+   #:action-items
+
+   #:unparse-message)
+
   ;; Markup content
   (:export
    #:kind

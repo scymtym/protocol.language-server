@@ -6,6 +6,14 @@
 
 (cl:in-package #:protocol.language-server.methods)
 
+;;; Context methods
+
+(defgeneric log-message (message))
+
+(defmethod log-message ((message t))
+  (signal (find-symbol "MESSAGE" (find-package "PROTOCOL.LANGUAGE-SERVER")) ; TODO
+          :message message))
+
 ;;; Workspace methods
 
 ;; TODO make a `document-version' or `versioned-document-name' comprising uri and version
@@ -76,7 +84,7 @@
   (:documentation
    "
 
-Workspace-wide."))
+    Workspace-wide."))
 
 ;;;
 

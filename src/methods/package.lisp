@@ -39,4 +39,4 @@
 
   ;; Experimental
   (:export
-   #:publish-diagnostic))
+   #:publish-diagnostics))

@@ -36,7 +36,7 @@
 ;;; Message classes
 
 (defmacro define-message-class (name (&rest lambda-list) (&rest slots))
-  (let+ ((make-name    (symbolicate '#:name- name))
+  (let+ ((make-name    (symbolicate '#:make- name))
          (unparse-name (symbolicate '#:unparse- name))
          ((&flet+ expand ((name &rest args &key
                                 (initarg (make-keyword name))
@@ -64,23 +64,47 @@
                                 ,initarg ',name))))) ; TODO one function
          ((&flet+ slot->initarg ((name &key initarg &allow-other-keys))
             (list initarg name)))
+         ((&flet+ slot->parse ((name &key initarg type &allow-other-keys))
+            (let+ ((property (make-keyword name))
+                   ((&flet parser (type)
+                      (typecase type
+                        ((member string) nil)
+                        (t               `(rcurry #'parse ',type)))))
+                   ((&flet parse-value (value-form)
+                      (cond
+                        ((typep type '(cons (eql list-of)))
+                         (if-let ((parser (parser (second type))))
+                           `(map 'list ,parser ,value-form)
+                           `(coerce ,value-form 'list)))
+                        ((or (eq type t)
+                             (subtypep type '(or boolean integer float string)))
+                         value-form)
+                        (t
+                         `(funcall ,(parser type) ,value-form))))))
+              (list initarg (parse-value `(expect-property data ,property ',type))))))
          ((&flet+ slot->unparse ((name &key type reader &allow-other-keys))
             (let+ ((keyword (make-keyword name))
                    ((&flet unparser (type)
                       (typecase type
                         ((member string) nil)
                         (t               (symbolicate '#:unparse- type)))))
-                   ((&flet unparse-value (value-form)
-                      (typecase type
-                        ((member t string)
-                         value-form)
-                        ((cons (eql list-of))
+                   ((&flet unparse-value (type value-form)
+                      (cond
+                        ((typep type '(cons (eql list-of)))
                          (if-let ((unparser (unparser (second type))))
                            `(map 'vector #',unparser ,value-form)
-                           `(coerce 'vector ,value-form)))
+                           `(coerce ,value-form 'vector)))
+                        ((or (eq type t)
+                             (subtypep type '(or boolean integer float string)))
+                         value-form)
                         (t
-                         `(,(unparser type) ,value-form))))))
-              `(list (cons ,keyword ,(unparse-value `(,reader object))))))))
+                         `(,(unparser type) ,value-form)))))
+                   ((&labels make-cell (type &optional (value-form `(,reader object)))
+                      (if (typep type '(cons (eql or) (cons (eql null))))
+                          `(alexandria:when-let ((value ,value-form))
+                             ,(make-cell (third type) 'value))
+                          `(list (cons ,keyword ,(unparse-value type value-form)))))))
+              (make-cell type)))))
     `(progn
        (defclass ,name ()
          ,(map 'list #'slot->slot slots)
@@ -91,6 +115,12 @@
          (make-instance ',name ,@(mappend #'slot->initarg slots)))
 
        (defun ,unparse-name (object)
+         (append ,@(map 'list #'slot->unparse slots)))
+
+       (defmethod parse ((data t) (message-type (eql ',name)))
+         (make-instance ',name ,@(mappend #'slot->parse slots)))
+
+       (defmethod unparse ((object ,name))
          (append ,@(map 'list #'slot->unparse slots))))))
 
 ;;; Parsing utilities

@@ -8,6 +8,92 @@
 
 ;; TODO make parse and unparse generic functions
 
+;;; Capabilities
+
+(define-enum text-document-sync-kind
+  (:none        0)
+  (:full        1)
+  (:incremental 2))
+
+(define-message-class completion-options
+    (&optional (resolve-provider t) trigger-characters)
+  ((resolve-provider   :type boolean)
+   (trigger-characters :type (list-of string))))
+
+(define-message-class signature-help-options ()
+  ())
+
+(define-message-class execute-command-options (commands)
+  ((commands :type (list-of string))))
+
+(define-message-class server-capabilities
+    (&key
+     (text-document-sync                   :incremental)
+     (hover-provider                       t)
+     (completion-provider                  (make-completion-options))
+     (signature-help-provider              (make-signature-help-options))
+     (definition-provider                  t)
+     (references-provider                  t)
+     (document-highlight-provider          t)
+     (document-symbol-provider             t)
+     (workspace-symbol-provider            nil)
+     (code-action-provider                 nil)
+     (document-formatting-provider         nil)
+     (document-range-formatting-provider   nil)
+     (document-on-type-formatting-provider nil)
+     (rename-provider                      t)
+     (execute-command-provider             nil))
+    ((text-document-sync                   :type text-document-sync-kind)
+     (hover-provider                       :type boolean)
+     (completion-provider                  :type (or null completion-options))
+
+     (signature-help-provider              :type (or null signature-help-options))
+
+     (definition-provider                  :type boolean)
+     ; typeDefinitionProvider?: boolean | (TextDocumentRegistrationOptions & StaticRegistrationOptions);
+     ; implementationProvider?: boolean | (TextDocumentRegistrationOptions & StaticRegistrationOptions);
+
+     (references-provider                  :type boolean)
+     (document-highlight-provider          :type boolean)
+     (document-symbol-provider             :type boolean)
+     (workspace-symbol-provider            :type boolean)
+     (code-action-provider                 :type boolean)
+     ; (code-lens-provider                   :type (or null code-lens-options))
+     (document-formatting-provider         :type boolean)
+     (document-range-formatting-provider   :type boolean)
+     (document-on-type-formatting-provider :type (or null document-on-type-formatting-options))
+     (rename-provider                      :type boolean)
+     ; (document-link-provider               :type (or null document-link-options))
+     ; (color-provider                      :type boolean | Color-Provider-Options | (Color-Provider-Options & Text-Document-Registration-Options & Static-Registration-Options))
+     ; (folding-range-provider              :type boolean | Folding-Range-Provider-Options | (Folding-Range-Provider-Options & Text-Document-Registration-Options & Static-Registration-Options))
+     (execute-command-provider             :type (or null execute-command-options))
+
+     ;; workspace : {
+     ;; /**
+     ;; * The server supports workspace folder.
+     ;; *
+     ;; * Since 3.6.0
+     ;; */
+     ;; workspace-Folders : {
+     ;; /**
+     ;; * The server has support for workspace folders
+     ;; */
+     ;; supported : boolean;
+     ;; /**
+     ;; * Whether the server wants to receive workspace folder
+     ;; * change notifications.
+     ;; *
+     ;; * If a strings is provided the string is treated as a ID
+     ;; * under which the notification is registered on the client
+     ;; * side. The ID can be used to unregister for these events
+     ;; * using the `client/unregister-Capability` request.
+     ;; */
+     ;; change-Notifications : string | boolean;
+     ;; }
+     ;; }
+
+     ))
+
 ;;; Position type
 
 (defun parse-position (object)
@@ -44,6 +130,12 @@
                 (text.source-location:source location)))
     (:range . ,(unparse-range (text.source-location:range location)))))
 
+;;;
+
+(define-message-class versioned-text-document-identifier (uri version)
+  ((uri     :type string)
+   (version :type non-negative-integer)))
+
 ;;; Text document
 ;;; TODO rename to versioned-text-document-identifier?
 
@@ -76,6 +168,22 @@
   ((document :type string ; text-document
              )
    (edits    :type (list-of edit))))
+
+;;; {Show,Log}Message
+
+(define-enum message-kind
+  (:error   1)
+  (:warning 2)
+  (:info    3)
+  (:log     4))
+
+(define-message-class message-action-item (title)
+  ((title :type string)))
+
+(define-message-class message (kind message &rest action-items)
+  ((kind         :type message-kind)
+   (message      :type string)
+   (action-items :type (list-of message-action-item))))
 
 ;;; Markup content
 
@@ -120,6 +228,22 @@
 (define-enum insert-text-format
   (:plain-text 1)
   (:snippet    2))
+
+#+TODO-later (define-message-class completion-item (label &rest args
+                                       &key kind filter-text detail documentation
+                                       range (new-text label) text-format)
+  (;; Presentation
+   (label         :type     string)
+   (kind          :type     (or null completion-item-kind))
+   (filter-text   :type     (or null string))
+   (detail        :type     (or null string))
+   (documentation :type     (or null string)
+                  :reader   documentation*)
+   ;; Replacement text
+   (edit          :type     edit
+                  :accessor %edit)
+   (text-format   :type     (or null insert-text-format)
+                  :initform :plain-text)))
 
 (defclass completion-item ()
   (;; Presentation
@@ -183,9 +307,9 @@
 
 ;;; Hover result
 
-(defclass hover-result ()
+(defclass hover-result () ; TODO rename to just hover?
   ((content :initarg  :content
-            :type     markup-content
+            :type     (cons markup-content)
             :reader   content)
    (range   :initarg  :range
             :reader   range
@@ -194,13 +318,17 @@
    :content (error "missing required initarg")))
 
 (defun make-hover-result (content &key range markup-kind)
-  (let ((content (if markup-kind
-                     (make-markup-content content markup-kind)
-                     (make-markup-content content))))
+  (let+ (((&flet make-content (content)
+            (if markup-kind
+                (make-markup-content content markup-kind)
+                (make-markup-content content))))
+         (content (if (listp content)
+                      (map 'list #'make-content content)
+                      (list (make-content content)))))
     (make-instance 'hover-result :content content :range range)))
 
 (defun unparse-hover-result (result)
-  `((:contents  . ,(unparse-markup-content (content result)))
+  `((:contents  . ,(map 'vector #'unparse-markup-content (content result)))
     ,@(when-let ((range (range result)))
         `((:range . ,(unparse-range range))))))
 
@@ -213,7 +341,13 @@
 
 (define-message-class highlight (kind range)
   ((kind  :type highlight-kind)
-   (range :type text.source-location:range)))
+   (range :type text.source-location:range))) ; TODO sloc:location should also work
+
+(defmethod print-object ((object highlight) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "~A @ ~/print-items:format-print-items/"
+            (kind object)
+            (print-items:print-items (range object)))))
 
 ;;; Symbol Information
 
@@ -245,6 +379,11 @@
   (:operator      25)
   (:typeparameter 26))
 
+#+TODO-later (define-message-class symbol-information (location name kind)
+  ((location :type text.source-location:location)
+   (name     :type string)
+   (kind     :type symbol-information-kind)))
+
 (defun unparse-symbol-information (uri version range name kind)
   `((:location . ((:uri     . ,uri)
                   (:version . ,version)
@@ -261,10 +400,14 @@
   (:info    4))
 
 (defclass diagnostic ()
-  ((annotation :initarg :annotation
-               :reader  annotation)
-   (message    :initarg :message
-               :reader  message)))
+  ((annotation  :initarg :annotation
+                :reader  annotation)
+   (annotations :initarg :annotations
+                :type    (list-of text.source-location::annotation))
+   (message     :initarg :message
+                :reader  message)))
+
+; (defun make-diagnostic )
 
 (defun unparse-diagnostic (diagnostic)
   (etypecase diagnostic
@@ -286,3 +429,19 @@
    (command   :type     string)
    (arguments :type     (list-of string)
               :initform '())))
+
+;;; Code Lens
+
+(define-message-class code-lens (range &optional command data)
+  ((range   :type     text.source-location:range)
+   (command :type     string ; (or null string)
+            :initform nil)
+   (data    :type     t
+            :initform nil)))
+
+;;; Document Link
+
+(define-message-class document-link (range &optional target)
+    ((range  :type     text.source-location:range)
+     (target :type     string ; (or null string)
+             :initform nil)))

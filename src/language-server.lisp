@@ -29,21 +29,28 @@
    (diagnostics :initarg :diagnostics
                 :reader  diagnostics)))
 
+(define-condition message (condition)
+  ((message :initarg :message
+            :reader  message)))
+
 (defun process-request (connection context)
   (let+ (((&values id method arguments)
           (protocol.language-server.connection:read-request connection))
          (diagnostics (make-hash-table :test #'eq))
+         (messages    '())
          ((&values result condition)
           (restart-case
               (block nil
                 (handler-bind
-                    ((error (lambda (condition)
-                              (if *debug*
-                                  (invoke-debugger condition)
-                                  (return (values nil condition)))))
+                    ((error      (lambda (condition)
+                                   (if *debug*
+                                       (invoke-debugger condition)
+                                       (return (values nil condition)))))
                      (diagnostic (lambda (condition) ; TODO generalize to all notifications
                                    (appendf (gethash (uri condition) diagnostics '())
-                                            (diagnostics condition)))))
+                                            (diagnostics condition))))
+                     (message    (lambda (condition)
+                                   (appendf messages (list (message condition))))))
                   (apply #'process-method context method arguments)))
             (continue (&optional condition)
               :report (lambda (stream)
@@ -70,6 +77,12 @@
                                 diagnostics)))))
      diagnostics)
 
+    (map nil (lambda (message)
+               (protocol.language-server.connection:write-notification
+                connection "window/logMessage"
+                (protocol.language-server.protocol:unparse-message message)))
+         messages)
+
     (cond
       ((eq result :exit)
        (throw 'exit nil))
@@ -77,3 +90,7 @@
       (t
        (protocol.language-server.connection:write-response
         connection id result)))))
+
+(defun process-notification (connection context notification)
+  (protocol.language-server.connection:write-notification
+   connection "textDocument/publishDiagnostics"))
