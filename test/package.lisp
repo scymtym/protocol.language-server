@@ -1,4 +1,4 @@
-;;;; package.lisp --- TODO.
+;;;; package.lisp --- Package definition for tests of the language-server module.
 ;;;;
 ;;;; Copyright (C) 2017, 2018 Jan Moringen
 ;;;;

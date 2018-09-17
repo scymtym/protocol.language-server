@@ -1,4 +1,4 @@
-;;;; workspace-methods.lisp --- TODO.
+;;;; workspace-methods.lisp --- Adapters for methods of the Workspace interface.
 ;;;;
 ;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
 ;;;;
@@ -75,6 +75,5 @@
   (log:info "~@<~A is executing command ~S ~S~@:>" object command arguments)
   (if-let ((command (find-symbol (string-upcase command)
                                  (find-package '#:keyword))))
-    (apply #'protocol.language-server.methods:execute-command
-           object command arguments)
+    (apply #'methods:execute-command object command arguments)
     (error "No such command: ~A" command)))

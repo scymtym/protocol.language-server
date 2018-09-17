@@ -36,8 +36,7 @@
   (let+ ((position (text.source-location::attach-text
                     (proto:parse-position position) (text object)))
          ((&values items incomplete?)
-          (protocol.language-server.methods:completion
-           nil object position))
+          (methods:completion nil object position))
          ((&flet unparse-item (item)
             ;; If the implementation used a string instead of
             ;; explicitly specifying the range, fill in a default
@@ -58,8 +57,7 @@
                            position)
   (let* ((position (text.source-location::attach-text
                     (proto:parse-position position) (text object)))
-         (result   (protocol.language-server.methods:hover
-                    nil object position)))
+         (result   (methods:hover nil object position)))
     (when result
       (proto:unparse-hover-result result))))
 
@@ -69,8 +67,7 @@
                            position)
   (let ((position (text.source-location::attach-text
                    (proto:parse-position position) (text object))))
-    (protocol.language-server.methods:definition
-     nil object position)))
+    (methods:definition nil object position)))
 
 (defmethod process-method ((object document)
                            (method (eql :references))
@@ -79,8 +76,7 @@
                            include-declaration)
   (let ((position (text.source-location::attach-text
                    (proto:parse-position position) (text object))))
-    (protocol.language-server.methods:references
-     nil object position include-declaration)))
+    (methods:references nil object position include-declaration)))
 
 (defmethod process-method ((object document)
                            (method (eql :documenthighlight))
@@ -89,17 +85,17 @@
                            position)
   (let* ((position   (text.source-location::attach-text
                       (proto:parse-position position) (text object)))
-         (highlights (protocol.language-server.methods:highlight-in-document
+         (highlights (methods:highlight-in-document
                       nil object version position)))
-    (map 'vector #'protocol.language-server.protocol:unparse-highlight highlights)))
+    (map 'vector #'proto:unparse-highlight highlights)))
 
 (defmethod process-method ((object document)
                            (method (eql :documentsymbol))
                            &key)
   ;; symbolinformation array or null
   (map 'vector (lambda (info)
-                 (apply #'protocol.language-server.protocol::unparse-symbol-information info))
-       (protocol.language-server.methods:symbols nil object)))
+                 (apply #'proto::unparse-symbol-information info))
+       (methods:symbols nil object)))
 
 (defmethod process-method ((object document)
                            (method (eql :codeaction))
@@ -108,10 +104,9 @@
                            context)
   (let* ((range   (text.source-location::attach-text
                    (proto:parse-range range) (text object)))
-         (actions (protocol.language-server.methods:code-actions
-                   nil object range context)))
+         (actions (methods:code-actions nil object range context)))
     (map 'vector (lambda (action)
-                   (apply #'protocol.language-server.protocol::unparse-code-action action))
+                   (apply #'proto::unparse-code-action action))
          actions)))
 
 (defmethod process-method ((object document)
@@ -124,8 +119,7 @@
          #+TODO-later (edits    (protocol.language-server.methods:rename
                     nil object position new-name)))
     ;; /workspace-wide/ rename
-    (protocol.language-server.methods:rename
-     nil object position new-name)
+    (methods:rename nil object position new-name)
     #+TODO-later `((:document-changes . ,(map 'vector (compose #'protocol.language-server.protocol::unparse-text-document-edit
                                                   (lambda (edit)
                                                     (protocol.language-server.protocol::make-text-document-edit

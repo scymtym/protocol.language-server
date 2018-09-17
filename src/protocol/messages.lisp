@@ -1,4 +1,4 @@
-;;;; messages.lisp --- TODO.
+;;;; messages.lisp --- Messages specified by the language server protocol.
 ;;;;
 ;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
 ;;;;

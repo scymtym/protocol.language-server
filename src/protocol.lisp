@@ -10,7 +10,7 @@
 
 (defgeneric connection (context)
   (:documentation
-   "TODO"))
+   "Return the connection used by CONTEXT."))
 
 (defgeneric capabilities (context)
   (:documentation

@@ -14,7 +14,8 @@
    #:let-plus)
 
   (:local-nicknames
-   (#:proto #:protocol.language-server.protocol))
+   (#:proto   #:protocol.language-server.protocol)
+   (#:methods #:protocol.language-server.methods))
 
   ;; Context protocol
   (:export
