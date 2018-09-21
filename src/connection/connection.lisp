@@ -1,4 +1,4 @@
-;;;; connection.lisp --- TODO.
+;;;; connection.lisp --- Connection class, reading/writing messages.
 ;;;;
 ;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
 ;;;;
@@ -20,7 +20,7 @@
 (defun make-connection (input output)
   (make-instance 'connection :input input :output output))
 
-;; TODO this can be a request or a notification
+;; TODO this can be a request or a notification => rename to read-message and return either request or notification instance
 (defmethod read-request ((connection connection))
   (let* ((raw       (transport:read-message (input connection)))
          (request   (json:decode-json-from-string raw))
@@ -31,7 +31,18 @@
     (log:info "~@<=> ~:[     Notification~;~:*[~D] Request~] ~A~@:_~
                ~2@T~@<~/protocol.language-server.connection::print-maybe-alist/~:>~:>"
               id method arguments)
-    (values id method arguments)))
+    (values id method arguments (if id
+                                    (make-instance 'request
+                                                   :id        id
+                                                   :method    method
+                                                   :arguments arguments)
+                                    (make-instance 'notification
+                                                   :method    method
+                                                   :arguments arguments)))))
+
+(defmethod write-message ((connection connection) (message t))
+  (let ((raw (json:encode-json (to-alist message))))
+    (transport:write-message (output connection) raw)))
 
 (defmethod write-response ((connection connection) (id t) (payload t))
   (let* ((response (make-response id `(:result . ,payload)))

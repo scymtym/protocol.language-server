@@ -17,6 +17,26 @@
   (:local-nicknames
    (#:transport #:protocol.language-server.transport))
 
+  ;; Messages
+  (:export
+   #:error
+   #:code
+   #:message
+
+   #:call-message
+   #:method
+   #:arguments
+
+   #:notification
+
+   #:id-message
+   #:id
+
+   #:request
+
+   #:response
+   #:value)
+
   ;; Connection protocol
   (:export
    #:read-request

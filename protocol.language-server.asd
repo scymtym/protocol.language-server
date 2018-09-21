@@ -47,6 +47,7 @@
                  :serial     t
                  :components ((:file       "package")
                               (:file       "util")
+                              (:file       "messages")
                               (:file       "connection")))
 
                 (:module     "protocol"
