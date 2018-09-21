@@ -36,7 +36,7 @@
   (let+ ((position (text.source-location::attach-text
                     (proto:parse-position position) (text object)))
          ((&values items incomplete?)
-          (methods:completion nil object position))
+          (methods:completion *workspace* object position))
          ((&flet unparse-item (item)
             ;; If the implementation used a string instead of
             ;; explicitly specifying the range, fill in a default

@@ -39,6 +39,8 @@
   (let ((uri (proto:parse-text-document text-document)))
     (setf (find-document uri object) nil)))
 
+(defvar *workspace*)
+
 (defmethod process-interface-method ((object    workspace)
                                      (interface (eql :textdocument))
                                      (method    t)
@@ -47,8 +49,9 @@
          (document (find-document uri object)))
     (handler-bind ((diagnostic (lambda (condition)
                                  (setf (%uri condition) uri))))
-      (apply #'process-method document method
-             :version version (remove-from-plist args :text-document)))))
+      (let ((*workspace* object))
+        (apply #'process-method document method
+               :version version (remove-from-plist args :text-document))))))
 
 ;;; Workspace methods
 
