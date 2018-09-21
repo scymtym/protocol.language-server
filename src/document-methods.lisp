@@ -105,9 +105,7 @@
   (let* ((range   (text.source-location::attach-text
                    (proto:parse-range range) (text object)))
          (actions (methods:code-actions nil object range context)))
-    (map 'vector (lambda (action)
-                   (apply #'proto::unparse-code-action action))
-         actions)))
+    (map 'vector #'proto::unparse actions)))
 
 (defmethod process-method ((object document)
                            (method (eql :rename))
