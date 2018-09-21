@@ -73,14 +73,14 @@
        (protocol.language-server.connection:write-notification
         connection "textDocument/publishDiagnostics"
         `((:uri         . ,uri)
-          (:diagnostics . ,(map 'vector #'protocol.language-server.protocol:unparse-diagnostic
+          (:diagnostics . ,(map 'vector #'proto:unparse-diagnostic
                                 diagnostics)))))
      diagnostics)
 
     (map nil (lambda (message)
                (protocol.language-server.connection:write-notification
                 connection "window/logMessage"
-                (protocol.language-server.protocol:unparse-message message)))
+                (proto:unparse-message message)))
          messages)
 
     (cond
@@ -90,7 +90,3 @@
       (t
        (protocol.language-server.connection:write-response
         connection id result)))))
-
-(defun process-notification (connection context notification)
-  (protocol.language-server.connection:write-notification
-   connection "textDocument/publishDiagnostics"))
