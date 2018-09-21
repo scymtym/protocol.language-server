@@ -80,7 +80,7 @@
                           (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:add-event
                                             (make-instance 'protocol.language-server.connection::notification
                                                            :method )))
-          (map nil (lambda (message)
+          #+LATER (map nil (lambda (message)
                      (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:add-message
                                        :server->client message))
                messages))))
