@@ -88,7 +88,10 @@
 
   (:export
    #:annotation
+
    #:message
+   #:make-message
+
    #:diagnostic
    ; TODO #:make-diagnostic
 
