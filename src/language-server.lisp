@@ -34,7 +34,7 @@
             :reader  message)))
 
 (defun process-request (connection context)
-  (let+ (((&values id method arguments)
+  (let+ (((&values id method arguments message)
           (protocol.language-server.connection:read-request connection))
          (diagnostics (make-hash-table :test #'eq))
          (messages    '())
@@ -59,6 +59,31 @@
                               (make-condition 'simple-error
                                               :format-control   "~@<Request aborted.~@:>"
                                               :format-arguments '())))))))
+
+
+    (with-simple-restart (continue "~@<Skip this shit.~@:>")
+      (when (find-package '#:protocol.language-server.visual-analyzer)
+        (handler-bind
+            ((error (lambda (condition) (log:error condition) )))
+          (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:note-context context)
+          (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:add-message :client->server message)
+          (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:add-message :server->client
+                            (cond (condition
+                                   (make-instance 'protocol.language-server.connection::error
+                                                  :code    0
+                                                  :message (princ-to-string condition)))
+                                  (id
+                                   (make-instance 'protocol.language-server.connection::response
+                                                  :id    id
+                                                  :value result))))
+          #+TODO (loop :for diagnostic
+                          (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:add-event
+                                            (make-instance 'protocol.language-server.connection::notification
+                                                           :method )))
+          (map nil (lambda (message)
+                     (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:add-message
+                                       :server->client message))
+               messages))))
 
     (format *trace-output* "Method: ~S/~S~%Result: ~S Condition: ~S~%"
             method id result condition)
