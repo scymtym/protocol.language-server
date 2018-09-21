@@ -93,4 +93,14 @@
    ; TODO #:make-diagnostic
 
    #:unparse-diagnostic
-   #:unparse-text-document))
+   #:unparse-text-document)
+
+  (:export
+   #:title
+   #:command
+   #:arguments
+
+   #:code-action
+   #:make-code-action
+
+   #:unparse-code-action))

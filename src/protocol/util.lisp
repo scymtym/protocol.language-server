@@ -9,11 +9,15 @@
 ;;; Enums
 
 (defmacro define-enum (name-and-options &body names-and-values)
-  (let+ (((name &key test) (ensure-list name-and-options))
+  (let+ (((name &key (test nil test-supplied?))
+          (ensure-list name-and-options))
          (names        (map 'list #'first names-and-values))
          (values       (map 'list #'second names-and-values))
          (parse-name   (symbolicate '#:parse- name))
-         (unparse-name (symbolicate '#:unparse- name)))
+         (unparse-name (symbolicate '#:unparse- name))
+         (test         (cond (test-supplied?          test)
+                             ((some #'stringp values) 'string=)))
+         (value-type   (if test t `(member ,@values))))
     `(progn
        (deftype ,name ()
          '(member ,@names))
@@ -25,9 +29,7 @@
            ,@(map 'list #'reverse names-and-values)
            (t (error "Invalid ~S value: ~S" ',name value))))
 
-       (declaim (ftype (function (,name)
-                                 ,@(unless test
-                                     `((values (member ,@values) &optional))))
+       (declaim (ftype (function (,name) (values ,value-type &optional))
                        ,unparse-name))
        (defun ,unparse-name (name)
          (ecase name

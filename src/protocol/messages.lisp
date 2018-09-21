@@ -23,6 +23,9 @@
 (define-message-class signature-help-options ()
   ())
 
+(define-message-class document-on-type-formatting-options ()
+  ())
+
 (define-message-class execute-command-options (commands)
   ((commands :type (list-of string))))
 
@@ -126,9 +129,12 @@
                    :range  (parse-range range))))
 
 (defun unparse-location (location)
-  `((:uri   . ,(text.source-location:name
-                (text.source-location:source location)))
-    (:range . ,(unparse-range (text.source-location:range location)))))
+  (let ((name (text.source-location:name
+               (text.source-location:source location))))
+    `((:uri   . ,(typecase name
+                   (pathname (format nil "file://~A" name))
+                   (t        name)))
+      (:range . ,(unparse-range (text.source-location:range location))))))
 
 ;;;
 
@@ -422,11 +428,32 @@
        (:severity . ,(unparse-severity (text.source-location:kind diagnostic)))
        (:message  . ,(text.source-location:text diagnostic))))))
 
-;;; Code Action
+;;; Command
 
-(define-message-class code-action (title command &rest arguments)
+(define-message-class command (title command &rest arguments)
   ((title     :type     string)
    (command   :type     string)
+   (arguments :type     (list-of string)
+              :initform '())))
+
+;;; Code Action
+
+(define-enum code-action-kind
+  (:quickfix                "quickfix")
+
+  (:refactor                "refactor")
+  (:refactor.extract        "refactor.extract")
+  (:refactor.inline         "refactor.inline")
+  (:refactor.rewrite        "refactor.rewrite")
+
+  (:source                  "source")
+  (:source.organize-imports "source.organizeImports"))
+
+(define-message-class code-action (title kind command &rest arguments)
+  ((title     :type     string)
+   (kind      :type     code-action-kind)
+   ; TODO edit
+   (command   :type     command)
    (arguments :type     (list-of string)
               :initform '())))
 
