@@ -334,9 +334,12 @@
     (make-instance 'hover-result :content content :range range)))
 
 (defun unparse-hover-result (result)
-  `((:contents  . ,(map 'vector #'unparse-markup-content (content result)))
-    ,@(when-let ((range (range result)))
-        `((:range . ,(unparse-range range))))))
+  (let ((kind  (kind (first (content result))))
+        (value (format nil "~{~A~^~2%~}"
+                       (map 'list #'value (content result)))))
+   `((:contents  . ,(unparse-markup-content (make-markup-content value kind)))
+     ,@(when-let ((range (range result)))
+         `((:range . ,(unparse-range range)))))))
 
 ;;; Document Highlight
 
