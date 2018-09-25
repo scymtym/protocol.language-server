@@ -8,6 +8,11 @@
 
 ;; TODO make parse and unparse generic functions
 
+(defconstant +false+ '+false+)
+
+(defmethod cl-json:encode-json ((object (eql +false+)) &optional stream)
+  (write-string "false" stream))
+
 ;;; Capabilities
 
 (define-enum text-document-sync-kind

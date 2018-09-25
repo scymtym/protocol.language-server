@@ -49,7 +49,7 @@
                         (proto:make-edit range edit)))))
             (proto:unparse-completion-item item))))
     `((:items         . ,(map 'vector #'unparse-item items))
-      (:is-incomplete . ,incomplete?))))
+      (:is-incomplete . ,(if incomplete? t proto::+false+)))))
 
 (defmethod process-method ((object document)
                            (method (eql :hover))
