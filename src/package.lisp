@@ -26,6 +26,7 @@
   (:export
    #:root-uri
    #:root-path
+   #:root-directory
 
    #:workspace)
 

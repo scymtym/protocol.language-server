@@ -61,10 +61,21 @@
   ((root-uri  :initarg  :root-uri
               :reader   root-uri)
    (root-path :initarg  :root-path
-              :reader   root-path))
+              :reader   root-path
+              :accessor %root-path))
   (:default-initargs
    :root-uri  (error "missing required initarg :root-uri")
    :root-path (error "missing required initarg :root-path")))
 
+(defmethod shared-initialize :after ((instance   standard-workspace)
+                                     (slot-naems t)
+                                     &key
+                                     (root-path nil root-path-supplied?))
+  (when root-path-supplied?
+    (setf (%root-path instance) (uiop:ensure-directory-pathname root-path))))
+
 (defmethod print-items:print-items append ((object standard-workspace))
   `((:root-uri ,(root-uri object) "~A" ((:before :document-count)))))
+
+(defmethod root-directory ((workspace standard-workspace))
+  (root-path workspace))
