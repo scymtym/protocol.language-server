@@ -25,10 +25,12 @@
   ;; Workspace protocol and class
   (:export
    #:root-uri
-   #:root-path
    #:root-directory
 
-   #:workspace)
+   #:workspace
+   #:standard-workspace
+
+   #:root-path) ; deprecated
 
   ;; Document protocol and class
   (:export
@@ -54,6 +56,10 @@
    #:make-document
 
    #:document-class-mixin)
+
+  ;; Root URI mixin
+  (:export
+   #:root-uri-mixin)
 
   ;; Dispatch protocol
   (:export
