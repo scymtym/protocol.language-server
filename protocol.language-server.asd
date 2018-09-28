@@ -55,6 +55,7 @@
                  :pathname   "src/protocol"
                  :serial     t
                  :components ((:file       "package")
+                              (:file       "protocol")
                               (:file       "util")
                               (:file       "messages")))
 
