@@ -8,7 +8,9 @@
   (:use
    #:cl
 
-   #:fiveam)
+   #:fiveam
+
+   #:protocol.language-server)
 
   (:export
    #:run-tests))
