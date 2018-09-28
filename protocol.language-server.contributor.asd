@@ -1,5 +1,5 @@
 (defsystem "protocol.language-server.contributor"
-  :description "TODO"
+  :description "A contributor-based framework for providing LSP features."
   :license     "LLGPLv3" ; see COPYING file for details
 
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"

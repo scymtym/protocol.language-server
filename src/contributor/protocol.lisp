@@ -56,7 +56,9 @@
                          (appendf result-contents contents)))))
                  contributors contexts)
     (when result-contents
-      (proto:make-hover-result result-contents :range result-range))))
+      (proto:make-hover-result result-contents
+                               :range       result-range
+                               :markup-kind :markdown))))
 
 ;;; Completion contributor protocol
 
