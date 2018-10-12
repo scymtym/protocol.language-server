@@ -103,7 +103,7 @@
   (:method ((workspace t) (document t) (context t) (contributor t))
     '()))
 
-(defgeneric make-completion-contributors (docuent))
+(defgeneric make-completion-contributors (document))
 
 ;;; Default behavior
 
