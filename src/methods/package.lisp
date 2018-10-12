@@ -17,6 +17,8 @@
    #:did-change-configuration
    #:did-change-watched-files
 
+   #:symbol-query
+
    #:edit
 
    #:execute-command)

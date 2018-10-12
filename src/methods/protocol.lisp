@@ -25,16 +25,18 @@
 
 (defgeneric did-change-watched-files (workspace))
 
-(defgeneric symbol-information (workspace query))
-
-(defgeneric edit (workspace edits)
+(defgeneric symbol-query (workspace query)
   (:documentation
-   ""))
+   "Return symbols in WORKSPACE matching QUERY."))
 
 (defgeneric execute-command (workspace command &rest arguments)
   (:method ((workspace t) (command t) &rest arguments)
     (declare (ignore arguments))
     (error "No such command: ~S" command))
+  (:documentation
+   ""))
+
+(defgeneric edit (workspace edits)
   (:documentation
    ""))
 
