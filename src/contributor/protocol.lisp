@@ -42,7 +42,7 @@
 
 (defgeneric context-contributions (workspace document position contributor))
 
-;; If we had something like (adopt workspace document), we could call
+;; TODO If we had something like (adopt workspace document), we could call
 ;; this with a workspace argument
 (defgeneric make-context-contributors (document))
 
