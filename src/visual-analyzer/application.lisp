@@ -77,9 +77,10 @@
   (when *trace*
     (setf (context *trace*) context)))
 
-(defun add-message (direction message)
+(defun add-message (direction message &key backtrace)
   (when *trace*
-    (add-message! *trace* direction (get-internal-real-time) message)))
+    (add-message! *trace* direction (get-internal-real-time) message
+                  )))
 
 ;; (defun %add-event (class message)
 ;;   (when *trace*

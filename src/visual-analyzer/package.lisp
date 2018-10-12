@@ -13,6 +13,5 @@
 
   (:shadow
    #:trace
-   #:inspect)
-  (:export
-   #:print-annotated-lines-using-style))
+   #:inspect
+   #:backtrace))

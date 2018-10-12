@@ -113,7 +113,13 @@
 
 ;;;
 
-(clim:define-presentation-method clim:present ((object sloc:annotation) (type document) stream view &key)
-  (text.source-location.print:print-annotations-using-style
-   (text.source-location.print:make-style :table)
-   stream (list object) :context-lines 2))
+(clim:define-presentation-method clim:present ((object sloc:annotation)
+                                               (type   document)
+                                               stream
+                                               view &key)
+  (clim:surrounding-output-with-border (stream :shape       :rectangle
+                                               :background  clim:+beige+
+                                               :outline-ink clim:+light-goldenrod+)
+    (text.source-location.print:print-annotations-using-style
+     (text.source-location.print:make-style :table)
+     stream (list object) :context-lines 2)))
