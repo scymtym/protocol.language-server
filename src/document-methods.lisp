@@ -76,7 +76,8 @@
                            include-declaration)
   (let ((position (text.source-location::attach-text
                    (proto:parse-position position) (text object))))
-    (methods:references nil object position include-declaration)))
+    (map 'vector #'proto:unparse-location
+         (methods:references nil object position include-declaration))))
 
 (defmethod process-method ((object document)
                            (method (eql :documenthighlight))
@@ -94,7 +95,10 @@
                            &key)
   ;; symbolinformation array or null
   (map 'vector (lambda (info)
-                 (apply #'proto::unparse-symbol-information info))
+                 (typecase info
+                   (cons (error "no longer supported") ; (apply #'proto::unparse-symbol-information info)
+                    )
+                   (t    (proto:unparse info))))
        (methods:symbols nil object)))
 
 (defmethod process-method ((object document)
