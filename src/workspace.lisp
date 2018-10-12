@@ -23,6 +23,9 @@
 (defmethod document-count ((container document-container-mixin))
   (hash-table-count (%documents container)))
 
+(defmethod documents/alist ((container document-container-mixin))
+  (hash-table-alist (%documents container)))
+
 (defmethod find-document ((uri string) (container document-container-mixin))
   (gethash uri (%documents container)))
 
