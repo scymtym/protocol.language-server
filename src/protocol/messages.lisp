@@ -25,8 +25,8 @@
   ((resolve-provider   :type boolean)
    (trigger-characters :type (list-of string))))
 
-(define-message-class signature-help-options ()
-  ())
+(define-message-class signature-help-options (&key (trigger-characters '()))
+  ((trigger-characters :type (list-of string))))
 
 (define-message-class document-on-type-formatting-options ()
   ())
@@ -101,6 +101,17 @@
      ;; }
 
      ))
+
+(define-message-class workspace-client-capabilities ()
+  ())
+
+(define-message-class text-document-client-capabilities ()
+  ())
+
+(define-message-class client-capabilities (&key workspace text-document experimental)
+  ((workspace     :type (or null workspace-client-capabilities))
+   (text-document :type (or null text-document-client-capabilities))
+   (experimental  :type t)))
 
 ;;; Position type
 
@@ -318,7 +329,9 @@
 
 ;;; Hover result
 
-(defclass hover-result () ; TODO rename to just hover?
+;; TODO in case of markup-content, can only have a single content
+;; TODO rename content -> contents
+(defclass hover-result ()               ; TODO rename to just hover?
   ((content :initarg  :content
             :type     (cons markup-content)
             :reader   content)
@@ -365,7 +378,7 @@
 
 ;;; Symbol Information
 
-(define-enum symbol-information-kind
+(define-enum symbol-kind
   (:file           1)
   (:module         2)
   (:namespace      3)
@@ -384,6 +397,7 @@
   (:number        16)
   (:boolean       17)
   (:array         18)
+  ;; Later additions
   (:object        19)
   (:key           20)
   (:null          21)
@@ -393,17 +407,34 @@
   (:operator      25)
   (:typeparameter 26))
 
-#+TODO-later (define-message-class symbol-information (location name kind)
-  ((location :type text.source-location:location)
-   (name     :type string)
-   (kind     :type symbol-information-kind)))
+(define-message-class document-symbol (name kind range
+                                       &key
+                                       detail
+                                       deprecated?
+                                       (selection-range range)
+                                       children)
+    ((name            :type string)
+     (detail          :type (or null string))
+     (kind            :type symbol-kind)
+     (deprecated?     :type boolean) ; TODO is mapped to JSON correctly w.r.t. the spec?
+     (range           :type text.source-location:range)
+     (selection-range :type text.source-location:range)
+     (children        :type (list-of document-symbol))))
 
-(defun unparse-symbol-information (uri version range name kind)
-  `((:location . ((:uri     . ,uri)
-                  (:version . ,version)
-                  (:range   . ,(unparse-range range))))
-    (:name     . ,name)
-    (:kind     . ,(unparse-symbol-information-kind kind))))
+(defmethod print-items:print-items append ((object document-symbol))
+  (let ((kind  (kind object))
+        (name  (name object))
+        (range (print-items:print-items (range object))))
+    `((:kind  ,kind  "~A")
+      (:name  ,name  " ~A" ((:after :kind)))
+      (:range ,range " @~/print-items:format-print-items/" ((:after :name))))))
+
+(define-message-class symbol-information (name kind location &key deprecated? container-name)
+  ((name           :type string)
+   (kind           :type symbol-kind)
+   (deprecated?    :type boolean)
+   (location       :type text.source-location:location)
+   (container-name :type (or null string))))
 
 ;;; Diagnostic
 
@@ -412,6 +443,12 @@
   (:warning 2)
   (:note    3)
   (:info    4))
+
+#+later (define-message-class diagnostic (message &rest annotations)
+  ((annotations :initarg :annotations
+                :type    (list-of text.source-location:annotation))
+   (message     :initarg :message
+                :reader  message)))
 
 (defclass diagnostic ()
   ((annotation  :initarg :annotation
@@ -431,7 +468,7 @@
          (:severity . ,(unparse-severity (text.source-location:kind annotation)))
          (:message  . ,(format nil "~A: ~A"
                                message (text.source-location:text annotation))))))
-    (text.source-location::annotation
+    (text.source-location:annotation
      `((:range    . ,(unparse-range (text.source-location:range diagnostic)))
        (:severity . ,(unparse-severity (text.source-location:kind diagnostic)))
        (:message  . ,(text.source-location:text diagnostic))))))

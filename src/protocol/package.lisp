@@ -1,4 +1,4 @@
-;;;; package.lisp --- Package definition for the transport module.
+;;;; package.lisp --- Package definition for the protocol module.
 ;;;;
 ;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
 ;;;;
@@ -9,6 +9,11 @@
    #:cl
    #:alexandria
    #:let-plus)
+
+  ;; Serialization protocol
+  (:export
+   #:parse
+   #:unparse)
 
   (:export
    #:parse-position #:unparse-position
@@ -86,6 +91,29 @@
 
    #:unparse-highlight)
 
+  ;; Document symbol
+  (:export
+   #:name
+   #:detail
+   #:kind
+   #:deprecated?
+   #:range
+   #:selection-range
+   #:children
+
+   #:make-document-symbol)
+
+  ;; Symbol information
+  (:export
+   #:name
+   #:kind
+   #:deprecated?
+   #:location
+   #:container-name
+
+   #:make-symbol-information)
+
+  ;; Diagnostic
   (:export
    #:annotation
 
@@ -93,11 +121,12 @@
    #:make-message
 
    #:diagnostic
-   ; TODO #:make-diagnostic
+                                        ; TODO #:make-diagnostic
 
    #:unparse-diagnostic
-   #:unparse-text-document)
+   #:unparse-text-document) ; TODO why is this here?
 
+  ;; Code action
   (:export
    #:title
    #:command
