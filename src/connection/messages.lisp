@@ -8,10 +8,12 @@
 ;;; `error'
 
 (defclass error (message)
-  ((code    :initarg :code
-            :reader  code)
-   (message :initarg :message
-            :reader  message)))
+  ((%code      :initarg :code
+               :reader  code)
+   (%message   :initarg :message
+               :reader  message)
+   (%backtrace :initarg :backtrace
+               :reader  backtrace)))
 
 (defmethod print-items:print-items append ((object error))
   `((:code    ,(code object)    "~D")

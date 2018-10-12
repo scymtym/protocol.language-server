@@ -11,6 +11,7 @@
    #:let-plus)
 
   (:shadow
+   #:backtrace
    #:error
    #:method)
 
@@ -22,6 +23,7 @@
    #:error
    #:code
    #:message
+   #:backtrace
 
    #:call-message
    #:method
