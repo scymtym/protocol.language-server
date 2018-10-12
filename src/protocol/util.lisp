@@ -78,6 +78,8 @@
                          (if-let ((parser (parser (second type))))
                            `(map 'list ,parser ,value-form)
                            `(coerce ,value-form 'list)))
+                        ((eq type 'boolean)
+                         `(if ,value-form t +false+))
                         ((or (eq type t)
                              (subtypep type '(or boolean integer float string)))
                          value-form)
@@ -96,19 +98,21 @@
                          (if-let ((unparser (unparser (second type))))
                            `(map 'vector #',unparser ,value-form)
                            `(coerce ,value-form 'vector)))
+                        ((eq type 'boolean)
+                         `(if ,value-form t +false+))
                         ((or (eq type t)
                              (subtypep type '(or boolean integer float string)))
                          value-form)
                         (t
                          `(,(unparser type) ,value-form)))))
-                   ((&labels make-cell (type &optional (value-form `(,reader object)))
+                   ((&labels make-cell (type &optional (value-form `(,reader message)))
                       (if (typep type '(cons (eql or) (cons (eql null))))
-                          `(alexandria:when-let ((value ,value-form))
+                          `(when-let ((value ,value-form))
                              ,(make-cell (third type) 'value))
                           `(list (cons ,keyword ,(unparse-value type value-form)))))))
               (make-cell type)))))
     `(progn
-       (defclass ,name ()
+       (defclass ,name (print-items:print-items-mixin)
          ,(map 'list #'slot->slot slots)
          (:default-initargs
           ,@(mappend #'slot->default-initarg slots)))
@@ -116,13 +120,13 @@
        (defun ,make-name ,lambda-list
          (make-instance ',name ,@(mappend #'slot->initarg slots)))
 
-       (defun ,unparse-name (object)
+       (defun ,unparse-name (message)
          (append ,@(map 'list #'slot->unparse slots)))
 
-       (defmethod parse ((data t) (message-type (eql ',name)))
+       (defmethod parse ((data t) (message-class (eql ',name)))
          (make-instance ',name ,@(mappend #'slot->parse slots)))
 
-       (defmethod unparse ((object ,name))
+       (defmethod unparse ((message ,name))
          (append ,@(map 'list #'slot->unparse slots))))))
 
 ;;; Parsing utilities
