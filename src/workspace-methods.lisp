@@ -67,8 +67,7 @@
                            (method (eql :symbol))
                            &key
                            query)
-  ;; symbol-information array or null
-  )
+  (map 'vector #'proto:unparse (methods:symbol-query object query)))
 
 (defmethod process-method ((object workspace)
                            (method (eql :executecommand))
