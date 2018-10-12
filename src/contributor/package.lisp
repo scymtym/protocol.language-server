@@ -8,7 +8,15 @@
    (#:proto   #:protocol.language-server.protocol)
    (#:methods #:protocol.language-server.methods))
 
-  ;;  Context contributor protocol
+  ;; Diagnostics contributor protocol
+  (:export
+   #:diagnostics
+   #:diagnostics-using-contributors
+   #:diagnostics-contributions
+
+   #:make-diagnostics-contributors)
+
+  ;; Context contributor protocol
   (:export
    #:contexts
    #:contexts-using-contributors
@@ -32,6 +40,9 @@
 
   ;; Mixins
   (:export
+   #:diagnostics-contributors-mixin
+   #:diagnostics-contributors
+
    #:context-contributors-mixin
    #:context-contributors
 

@@ -1,5 +1,39 @@
 (cl:in-package #:protocol.language-server.contributor)
 
+;;; Diagnostics contributor protocol
+
+(defgeneric diagnostics (workspace document)
+  (:documentation
+   "Return diagnostics for DOCUMENT in WORKSPACE."))
+
+(defgeneric diagnostics-using-contributors (workspace document contributors)
+  (:documentation
+   "Return diagnostics for DOCUMENT in WORKSPACE using CONTRIBUTORS.
+
+    The default method calls `diagnostics-contributions' for each
+    element of CONTRIBUTORS and returns a (possibly empty) list of
+    diagnostics."))
+
+(defgeneric diagnostics-contributions (workspace document contributor)
+  (:documentation
+   "Return CONTRIBUTOR's diagnostics for DOCUMENT."))
+
+(defgeneric make-diagnostics-contributors (document)
+  (:documentation
+   "Return a list of diagnostics contributors suitable for DOCUMENT."))
+
+;;; Default behavior
+
+(defmethod diagnostics-using-contributors ((workspace    t)
+                                           (document     t)
+                                           (contributors list))
+  (mappend (lambda (contributor)
+             (with-simple-restart
+                 (continue "~@<Skip diagnostics contributor ~A.~@:>"
+                           contributor)
+               (diagnostics-contributions workspace document contributor)))
+           contributors))
+
 ;;; Context contributor protocol
 
 (defgeneric contexts (workspace document position))

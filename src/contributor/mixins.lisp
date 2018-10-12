@@ -1,5 +1,22 @@
 (cl:in-package #:protocol.language-server.contributor)
 
+;;; `diagnostics-contributors-mixin'
+
+(defclass diagnostics-contributors-mixin ()
+  ((%diagnostics-contributors :reader diagnostics-contributors
+                              :writer (setf %diagnostics-contributors))))
+
+(defmethod initialize-instance :after
+    ((instance diagnostics-contributors-mixin)
+     &key
+     (diagnostics-contributors (make-diagnostics-contributors instance)))
+  (setf (%diagnostics-contributors instance) diagnostics-contributors))
+
+(defmethod diagnostics ((workspace t)
+                        (document  diagnostics-contributors-mixin))
+  (diagnostics-using-contributors
+   workspace document (diagnostics-contributors document)))
+
 ;;; `context-contributors-mixin'
 
 (defclass context-contributors-mixin ()
