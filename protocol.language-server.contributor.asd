@@ -1,3 +1,9 @@
+;;;; protocol.language-server.contributor.asd --- System definition for contributors.
+;;;;
+;;;; Copyright (C) 2018 Jan Moringen
+;;;;
+;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+
 (defsystem "protocol.language-server.contributor"
   :description "A contributor-based framework for providing LSP features."
   :license     "LLGPLv3" ; see COPYING file for details
