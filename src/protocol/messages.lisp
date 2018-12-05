@@ -187,9 +187,16 @@
 ;;; Text document edit
 
 (define-message-class text-document-edit (document &rest edits)
-  ((document :type string ; text-document
-             )
+  ((document :type versioned-text-document-identifier
+             :property :text-document)
    (edits    :type (list-of edit))))
+
+;;; Workspace edit
+
+(define-message-class workspace-edit (document-changes ; &optional changes
+                                      )
+  (; (changes          :type (list-of text-document-edit))
+   (document-changes :type (list-of text-document-edit))))
 
 ;;; {Show,Log}Message
 

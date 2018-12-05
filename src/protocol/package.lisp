@@ -34,6 +34,19 @@
 
    #:unparse-edit)
 
+  ;; Text document edit
+  (:export
+   #:document
+   #:edits
+
+   #:make-text-document-edit)
+
+  (:export
+   #:document-changes
+
+   #:workspace-edit
+   #:make-workspace-edit)
+
   ;; Message
   (:export
    #:message-action-item
@@ -125,6 +138,15 @@
 
    #:unparse-diagnostic
    #:unparse-text-document) ; TODO why is this here?
+
+  ;; Command
+  (:export
+   #:title
+   #:command
+   #:arguments
+
+   #:command
+   #:make-command)
 
   ;; Code action
   (:export

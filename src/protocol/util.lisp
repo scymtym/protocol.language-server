@@ -41,12 +41,13 @@
   (let+ ((make-name    (symbolicate '#:make- name))
          (unparse-name (symbolicate '#:unparse- name))
          ((&flet+ expand ((name &rest args &key
-                                (initarg (make-keyword name))
-                                (type    't)
-                                (reader  name)
+                                (initarg  (make-keyword name))
+                                (type     't)
+                                (reader   name)
+                                (property (make-keyword name))
                                 &allow-other-keys))
-            `(,name :initarg ,initarg :type ,type :reader ,reader
-                    ,@(remove-from-plist args :initarg :type :reader))))
+            `(,name :initarg ,initarg :type ,type :reader ,reader :property ,property
+                    ,@(remove-from-plist args :initarg :type :reader :property))))
          (slots (map 'list (compose #'expand #'ensure-list) slots))
          ((&flet+ slot->slot ((name &rest args &key type &allow-other-keys))
             (let ((type (typecase type
@@ -54,7 +55,7 @@
                            `(or null (cons ,(second type))))
                           (t
                            type))))
-              `(,name :type ,type ,@(remove-from-plist args :type)))))
+              `(,name :type ,type ,@(remove-from-plist args :type :property)))))
          ((&flet+ slot->default-initarg
               ((&ign &key
                      initarg
@@ -66,9 +67,8 @@
                                 ,initarg ',name))))) ; TODO one function
          ((&flet+ slot->initarg ((name &key initarg &allow-other-keys))
             (list initarg name)))
-         ((&flet+ slot->parse ((name &key initarg type &allow-other-keys))
-            (let+ ((property (make-keyword name))
-                   ((&flet parser (type)
+         ((&flet+ slot->parse ((name &key initarg type property &allow-other-keys))
+            (let+ (((&flet parser (type)
                       (typecase type
                         ((member string) nil)
                         (t               `(rcurry #'parse ',type)))))
@@ -86,9 +86,8 @@
                         (t
                          `(funcall ,(parser type) ,value-form))))))
               (list initarg (parse-value `(expect-property data ,property ',type))))))
-         ((&flet+ slot->unparse ((name &key type reader &allow-other-keys))
-            (let+ ((keyword (make-keyword name))
-                   ((&flet unparser (type)
+         ((&flet+ slot->unparse ((name &key type reader property &allow-other-keys))
+            (let+ (((&flet unparser (type)
                       (typecase type
                         ((member string) nil)
                         (t               (symbolicate '#:unparse- type)))))
@@ -109,7 +108,7 @@
                       (if (typep type '(cons (eql or) (cons (eql null))))
                           `(when-let ((value ,value-form))
                              ,(make-cell (third type) 'value))
-                          `(list (cons ,keyword ,(unparse-value type value-form)))))))
+                          `(list (cons ,property ,(unparse-value type value-form)))))))
               (make-cell type)))))
     `(progn
        (defclass ,name (print-items:print-items-mixin)
