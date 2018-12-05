@@ -20,6 +20,19 @@
 (defun make-connection (input output &key (class 'connection))
   (make-instance class :input input :output output))
 
+(defun submit-to-visual-analyzer (direction message)
+  (with-simple-restart (continue "~@<Skip this shit.~@:>")
+    (when (find-package '#:protocol.language-server.visual-analyzer)
+      (handler-bind
+          ((error (lambda (condition)
+                    (log:error "Error submitting ~A message to visual analyzer: ~A"
+                               direction condition)
+                    (let ((backtrace (with-output-to-string (stream)
+                                       (sb-debug:print-backtrace :stream stream))))
+                      (log:error backtrace))
+                    (continue))))
+        (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:add-message direction message)))))
+
 (defmethod read-message ((connection connection))
   (let* ((raw       (transport:read-message (input connection)))
          (request   (json:decode-json-from-string raw))
@@ -39,9 +52,11 @@
                          (t
                           (apply #'make-notification method
                                  (alist-plist arguments))))))
+      (ignore-errors (submit-to-visual-analyzer :client->server message))
       (values message id method (alist-plist arguments)))))
 
 (defmethod write-message ((connection connection) (message t))
+  (ignore-errors (submit-to-visual-analyzer :server->client message))
   (let ((raw (json:encode-json-to-string (to-alist message))))
     (transport:write-message (output connection) raw)))
 
