@@ -94,12 +94,7 @@
                            (method (eql :documentsymbol))
                            &key)
   ;; symbolinformation array or null
-  (map 'vector (lambda (info)
-                 (typecase info
-                   (cons (error "no longer supported") ; (apply #'proto::unparse-symbol-information info)
-                    )
-                   (t    (proto:unparse info))))
-       (methods:symbols nil object)))
+  (map 'vector #'proto:unparse (methods:symbols nil object)))
 
 (defmethod process-method ((object document)
                            (method (eql :codeaction))
