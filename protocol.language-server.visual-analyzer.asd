@@ -1,3 +1,9 @@
+;;;; protocol.language-server.visual-analyzer.asd --- System definition for the visual analyzer.
+;;;;
+;;;; Copyright (C) 2018 Jan Moringen
+;;;;
+;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+
 (defsystem "protocol.language-server.visual-analyzer"
   :description "A visual protocol analyzer for language server protocol sessions"
   :license     "LLGPLv3" ; see COPYING file for details

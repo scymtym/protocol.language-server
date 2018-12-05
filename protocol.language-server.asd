@@ -1,3 +1,9 @@
+;;;; protocol.language-server.asd --- System definition for the main system.
+;;;;
+;;;; Copyright (C) 2018 Jan Moringen
+;;;;
+;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+
 (defsystem "protocol.language-server"
   :description "An implementation of the language server protocol."
   :license     "LLGPLv3" ; see COPYING file for details
