@@ -7,6 +7,7 @@
 (cl:defpackage #:protocol.language-server.test
   (:use
    #:cl
+   #:let-plus
 
    #:fiveam
 
