@@ -40,7 +40,7 @@
   (:documentation
    "TODO"))
 
-(defgeneric update (document start-index end-index new-text)
+(defgeneric update (document range new-text)
   (:documentation
    "TODO"))
 

@@ -25,7 +25,7 @@
   (let+ (((&flet apply-change (change)
             (let+ (((text range &ign)
                     (proto:parse-text-document-content-change change)))
-              (update* object range text)))))
+              (update object range text)))))
     (map nil #'apply-change content-changes) ; TODO this should just be the default method
     (setf (%version object) version)))
 
