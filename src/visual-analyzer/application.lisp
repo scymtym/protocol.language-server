@@ -5,17 +5,16 @@
            :reader   trace))
   (:panes
    ; (auto-scroll clim:toggle-button)
-   (trace                 trace-pane)
-   (interactor            :interactor)
-   (pointer-documentation :pointer-documentation))
+   (trace      trace-pane)
+   (interactor :interactor))
   (:layouts
    (default
     (clim:vertically ()
       (:fill (clim:vertically ()
                               ;; auto-scroll
                (clim:scrolling () trace)))
-      (1/16  interactor)
-      (1/32  pointer-documentation))))
+      (1/16  interactor))))
+  (:pointer-documentation t)
   (:default-initargs
    :title  "Protocol Analyzer"
    :width  900
@@ -79,8 +78,7 @@
 
 (defun add-message (direction message &key backtrace)
   (when *trace*
-    (add-message! *trace* direction (get-internal-real-time) message
-                  )))
+    (add-message! *trace* direction (get-internal-real-time) message)))
 
 ;; (defun %add-event (class message)
 ;;   (when *trace*
