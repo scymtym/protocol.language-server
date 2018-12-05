@@ -18,31 +18,40 @@
 
 (defgeneric workspace (context)
   (:documentation
-   "TODO"))
+   "Return the workspace of CONTEXT.
+
+    This function must not be called before CONTEXT has processed the
+    \"initialize\" method call."))
+
+(defgeneric make-workspace (context root-uri root-path)
+  (:documentation
+   "Make and return a workspace for CONTEXT, ROOT-URI and ROOT-PATH."))
 
 ;;; Workspace protocol
 
 (defgeneric root-uri (workspace)
   (:documentation
-   "TODO"))
+   "Return the root URI of WORKSPACE."))
 
 (defgeneric root-path (workspace)
   (:documentation
-   "TODO"))
+   "Return the root filesystem path of WORKSPACE."))
 
 ;;; Document protocol
 
 (defgeneric version (document)
   (:documentation
-   "TODO"))
+   "Return the current version of DOCUMENT."))
 
 (defgeneric text (document)
   (:documentation
-   "TODO"))
+   "Return the current text of DCUMENT."))
 
 (defgeneric update (document range new-text)
   (:documentation
-   "TODO"))
+   "Replace RANGE in DOCUMENT with NEW-TEXT.
+
+    If RANGE is `nil', replace the entire text of DOCUMENT."))
 
 (defgeneric position->index (document line character)
   (:documentation
@@ -64,11 +73,11 @@
 
 (defgeneric find-document (uri container)
   (:documentation
-   "TODO"))
+   "Return the document associated to URI in CONTAINER."))
 
 (defgeneric (setf find-document) (new-value uri container)
   (:documentation
-   "TODO"))
+   "Associate the document NEW-VALUE to URI in CONTAINER."))
 
 ;;; Method dispatch protocol
 

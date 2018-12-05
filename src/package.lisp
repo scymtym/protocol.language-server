@@ -21,7 +21,9 @@
   ;; Context protocol
   (:export
    #:connection
-   #:workspace)
+   #:capabilities
+   #:workspace
+   #:make-workspace)
 
   ;; Workspace protocol and class
   (:export
