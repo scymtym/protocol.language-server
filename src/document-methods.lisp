@@ -56,7 +56,7 @@
                            &key
                            position)
   (let* ((position (text.source-location::attach-text
-                    (proto:parse-position position) (text object)))
+                    (proto:parse position 'position) (text object)))
          (result   (methods:hover nil object position)))
     (when result
       (proto:unparse-hover-result result))))
@@ -66,7 +66,7 @@
                            &key
                            position)
   (let ((position (text.source-location::attach-text
-                   (proto:parse-position position) (text object))))
+                   (proto:parse position 'position) (text object))))
     (methods:definition nil object position)))
 
 (defmethod process-method ((object document)
@@ -75,7 +75,7 @@
                            position
                            include-declaration)
   (let ((position (text.source-location::attach-text
-                   (proto:parse-position position) (text object))))
+                   (proto:parse position 'position) (text object))))
     (map 'vector #'proto:unparse-location
          (methods:references nil object position include-declaration))))
 
@@ -85,7 +85,7 @@
                            version
                            position)
   (let* ((position   (text.source-location::attach-text
-                      (proto:parse-position position) (text object)))
+                      (proto:parse position 'position) (text object)))
          (highlights (methods:highlight-in-document
                       nil object version position)))
     (map 'vector #'proto:unparse-highlight highlights)))
@@ -107,7 +107,7 @@
                            range
                            context)
   (let* ((range   (text.source-location::attach-text
-                   (proto:parse-range range) (text object)))
+                   (proto:parse range 'text.source-location:range) (text object)))
          (actions (methods:code-actions nil object range context)))
     (map 'vector #'proto::unparse actions)))
 
@@ -117,7 +117,7 @@
                            position
                            new-name)
   (let* ((position (text.source-location::attach-text
-                    (proto:parse-position position) (text object)))
+                    (proto:parse position 'position) (text object)))
          #+TODO-later (edits    (protocol.language-server.methods:rename
                     nil object position new-name)))
     ;; /workspace-wide/ rename
