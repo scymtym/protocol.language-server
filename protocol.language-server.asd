@@ -7,7 +7,6 @@
 (defsystem "protocol.language-server"
   :description "An implementation of the language server protocol."
   :license     "LLGPLv3" ; see COPYING file for details
-
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
 
   :version     (:read-file-form "version-string.sexp")
@@ -76,7 +75,6 @@
 (defsystem "protocol.language-server/test"
   :description "Tests for the protocol.language-server system."
   :license     "LLGPLv3" ; see COPYING file for details
-
   :author      "Jan Moringen <jmoringe@techfak.uni-bielefeld.de>"
 
   :version     (:read-file-form "version-string.sexp")
