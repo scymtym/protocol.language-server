@@ -14,6 +14,7 @@
    #:let-plus)
 
   (:local-nicknames
+   (#:conn    #:protocol.language-server.connection)
    (#:proto   #:protocol.language-server.protocol)
    (#:methods #:protocol.language-server.methods))
 

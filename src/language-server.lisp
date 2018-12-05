@@ -8,10 +8,14 @@
 
 (defvar *debug* nil)
 
-(defun language-server (input output)
-  (let* ((connection (protocol.language-server.connection:make-connection
-                      input output))
-         (context    (make-instance 'context :connection connection)))
+(defun language-server (input output
+                        &key
+                        (connection-class nil connection-class-supplied?)
+                        (context-class    'context))
+  (let* ((connection (apply #'conn:make-connection input output
+                            (when connection-class-supplied?
+                              (list :class connection-class))))
+         (context    (make-instance context-class :connection connection)))
     (process-requests connection context)))
 
 (defun process-requests (connection context)
@@ -20,7 +24,8 @@
   (log:config :info)
   (with-output-to-file (*trace-output* "/tmp/trace" :if-exists :supersede)
     (catch 'exit
-      (loop (process-request connection context)))))
+      (loop (with-simple-restart (continue "~@<Skip this message.~@:>")
+              (process-request connection context))))))
 
 (define-condition diagnostic (condition)
   ((uri         :initarg :uri
@@ -41,28 +46,24 @@
   (signal 'debug1 :message message)
   message)
 
-(defun submit-to-visual-analyzer (context direction message)
+(defun process-request (connection context)
   (with-simple-restart (continue "~@<Skip this shit.~@:>")
     (when (find-package '#:protocol.language-server.visual-analyzer)
       (handler-bind
           ((error (lambda (condition)
                     (log:error "Error submitting message to visual analyzer: ~A" condition)
                     (log:error (with-output-to-string (stream)
-                                 (sb-debug:print-backtrace stream stream))))))
-        (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:note-context context)
-        (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:add-message direction message)))))
+                                 (sb-debug:print-backtrace :stream stream))))))
+        (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:note-context context))))
 
-(defun process-request (connection context)
-  (let+ (((&values id method arguments message)
-          (protocol.language-server.connection:read-request connection))
+  (let+ (((&values id method arguments message) (conn:read-message connection))
          (diagnostics (make-hash-table :test #'eq))
          ((&values result condition backtrace)
           (restart-case
               (block nil
-                (submit-to-visual-analyzer context :client->server message)
                 (handler-bind
                     ((debug1     (lambda (condition)
-                                   (submit-to-visual-analyzer context :debug (message condition)))))
+                                   (conn::submit-to-visual-analyzer :debug (message condition)))))
                   (handler-bind
                       ((error      (lambda (condition)
                                      (if *debug*
@@ -74,10 +75,11 @@
                                               (diagnostics condition))))
                        (message    (lambda (condition)
                                      ;; TODO does not go into visual analyzer this way
-                                     (protocol.language-server.connection:write-notification
-                                      connection "window/logMessage"
-                                      (proto:unparse-message (message condition))))))
-                    (apply #'process-method context method arguments))))
+                                     (conn:write-message
+                                      connection (apply #'conn:make-notification
+                                                        "window/logMessage" (alist-plist (proto:unparse (message condition))))))))
+                    (when method
+                      (apply #'process-method context method arguments)))))
             (continue (&optional condition)
               :report (lambda (stream)
                         (format stream "~@<Abort processing the current request.~@:>"))
@@ -85,18 +87,6 @@
                               (make-condition 'simple-error
                                               :format-control   "~@<Request aborted.~@:>"
                                               :format-arguments '())))))))
-
-
-    (when-let ((message (cond (condition
-                               (make-instance 'protocol.language-server.connection:error
-                                              :code      0
-                                              :message   (princ-to-string condition)
-                                              :backtrace backtrace))
-                              (id
-                               (make-instance 'protocol.language-server.connection:response
-                                              :id    id
-                                              :value result)))))
-      (submit-to-visual-analyzer context :server->client message))
 
     (format *trace-output* "Method: ~S/~S~%Result: ~S Condition: ~S~%"
             method id result condition)
@@ -112,20 +102,20 @@
            (handler-bind ((error (lambda (condition)
                                    (log:error "Failed to publish diagnostics ~A" condition)
                                    ())))
-             (protocol.language-server.connection:write-notification
-              connection "textDocument/publishDiagnostics"
-              `((:uri         . ,uri)
-                (:diagnostics . ,(map 'vector #'proto:unparse-diagnostic
-                                      diagnostics)))))
+             (conn:write-message connection (conn:make-notification
+                                             "textDocument/publishDiagnostics"
+                                             :uri         uri
+                                             :diagnostics (map 'vector #'proto:unparse-diagnostic
+                                                               diagnostics))))
          (continue ()
            :report "Skip diagnostics"
            (log:error "failed to publish diagnostics for ~A" uri))))
      diagnostics)
 
-    (cond
-      ((eq result :exit)
-       (throw 'exit nil))
-      ((not id))
-      (t
-       (protocol.language-server.connection:write-response
-        connection id result)))))
+    (cond ((eq result :exit)
+           (throw 'exit nil))
+          ((not id))
+          (method
+           (conn:write-message connection (conn:make-response id result))
+           #+no (protocol.language-server.connection:write-response
+                 connection id result)))))
