@@ -84,11 +84,18 @@
 
   :components  ((:module     "test"
                  :serial     t
-                 :components ((:file "package")
+                 :components ((:file       "package")
 
-                              (:file "workspace")
+                              (:file       "workspace")
 
-                              (:file "document-methods"))))
+                              (:file       "document-methods")))
+
+                (:module     "protocol"
+                 :pathname   "test/protocol"
+                 :depends-on ("test")
+                 :serial     t
+                 :components ((:file       "package")
+                              (:file       "messages"))))
 
   :perform     (test-op (operation component)
                  (uiop:symbol-call '#:protocol.language-server.test '#:run-tests)))

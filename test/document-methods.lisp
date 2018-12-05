@@ -17,11 +17,17 @@
                                  :version  1
                                  :text     "variables:
 foo")))
-    (process-method document :didchange :content-changes '(((:RANGE (:START (:LINE . 0) (:CHARACTER . 0))
-                                                             (:END (:LINE . 0) (:CHARACTER . 10)))
-                                                            (:RANGE-LENGTH . 10) (:TEXT . ""))))
-    (process-method document :didchange :content-changes '(((:RANGE (:START (:LINE . 1) (:CHARACTER . 0))
-                                                             (:END  (:LINE . 1) (:CHARACTER . 0)))
-                                                            (:RANGE-LENGTH . 0)
-                                                            (:TEXT . "a"))))
+    (process-method
+     document :didchange
+     :content-changes '(((:RANGE (:START (:LINE . 0) (:CHARACTER . 0))
+                          (:END (:LINE . 0) (:CHARACTER . 10)))
+                         (:RANGE-LENGTH . 10) (:TEXT . "")))
+     :version 1)
+    (process-method
+     document :didchange
+     :content-changes '(((:RANGE (:START (:LINE . 1) (:CHARACTER . 0))
+                          (:END  (:LINE . 1) (:CHARACTER . 0)))
+                         (:RANGE-LENGTH . 0)
+                         (:TEXT . "a")))
+     :version 2)
     (text document)))
