@@ -29,7 +29,11 @@
    #:method
    #:arguments
 
+   #:make-request
+
    #:notification
+
+   #:make-notification
 
    #:id-message
    #:id
@@ -37,14 +41,21 @@
    #:request
 
    #:response
-   #:value)
+   #:value
+
+   #:make-response)
 
   ;; Connection protocol
   (:export
-   #:read-request
-   #:write-response
-   #:write-notification)
+   #:read-message
+   #:write-message)
 
   ;; Connection construction
   (:export
-   #:make-connection))
+   #:make-connection)
+
+  ;; Deprecated
+  (:export
+   #:read-request
+   #:write-response
+   #:write-notification))

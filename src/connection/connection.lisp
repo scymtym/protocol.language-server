@@ -17,51 +17,61 @@
    :input  (cl:error "missing initarg :input")
    :output (cl:error "missing initarg :output")))
 
-(defun make-connection (input output)
-  (make-instance 'connection :input input :output output))
+(defun make-connection (input output &key (class 'connection))
+  (make-instance class :input input :output output))
 
-;; TODO this can be a request or a notification => rename to read-message and return either request or notification instance
-(defmethod read-request ((connection connection))
+(defmethod read-message ((connection connection))
   (let* ((raw       (transport:read-message (input connection)))
          (request   (json:decode-json-from-string raw))
 
          (id        (assoc-value request :id))
          (method    (assoc-value request :method))
-         (arguments (alist-plist (assoc-value request :params))))
+         (arguments (assoc-value request :params))
+         (result    (assoc-value request :result)))
     (log:info "~@<=> ~:[     Notification~;~:*[~D] Request~] ~A~@:_~
                ~2@T~@<~/protocol.language-server.connection::print-maybe-alist/~:>~:>"
               id method arguments)
-    (values id method arguments (if id
-                                    (make-instance 'request
-                                                   :id        id
-                                                   :method    method
-                                                   :arguments arguments)
-                                    (make-instance 'notification
-                                                   :method    method
-                                                   :arguments arguments)))))
+    (let ((message (cond ((and method id)
+                          (apply #'make-request id method
+                                 (alist-plist arguments)))
+                         (id
+                          (make-response id result))
+                         (t
+                          (apply #'make-notification method
+                                 (alist-plist arguments))))))
+      (values message id method (alist-plist arguments)))))
 
 (defmethod write-message ((connection connection) (message t))
-  (let ((raw (json:encode-json (to-alist message))))
+  (let ((raw (json:encode-json-to-string (to-alist message))))
     (transport:write-message (output connection) raw)))
 
+;;; Deprecated
+
+(defmethod read-request ((connection connection))
+  (let+ (((&values message id method arguments) (read-message connection)))
+    (values id method arguments message)))
+
+(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
+                            (function read-request :replacement read-message)))
+
 (defmethod write-response ((connection connection) (id t) (payload t))
-  (let* ((response (make-response id `(:result . ,payload)))
-         (raw      (json:encode-json-to-string response)))
+  (let* (#+no (response (make-response id `(:result . ,payload)))
+         #+no (raw      (json:encode-json-to-string response)))
     (log:info "~@<<= [~D] Response~@:_~
                ~2@T~@<~/protocol.language-server.connection::print-maybe-alist/~:>~:>"
               id payload)
-    (transport:write-message (output connection) raw)))
+    (write-message connection (make-response id payload))))
 
 (defmethod write-response ((connection connection) (id t) (payload condition))
   (let* ((message  (princ-to-string payload))
          (payload  `(:error . ((:code    . 0) ; TODO code. search for "ErrorCodes" in spec
                                (:message . ,message))))
-         (response (make-response id payload))
-         (raw      (json:encode-json-to-string response)))
+         #+no (response (make-response id payload))
+         #+no (raw      (json:encode-json-to-string response)))
     (log:info "~@<<= [~D] Error Response~@:_~
                ~2@T~@<~/protocol.language-server.connection::print-maybe-alist/~:>~:>"
               id payload)
-    (transport:write-message (output connection) raw)))
+    (write-message connection (make-response id payload))))
 
 (defmethod write-notification ((connection connection) (method string) (payload t))
   (let* ((notification `((:jsonrpc . "2.0")
@@ -73,9 +83,6 @@
               method payload)
     (transport:write-message (output connection) raw)))
 
-;;; Utilities
-
-(defun make-response (id body)
-  `((:jsonrpc . "2.0")
-    (:id      . ,id)
-    ,body))
+(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
+                            (function write-response     :replacement write-message)
+                            (function write-notification :replacement write-message)))

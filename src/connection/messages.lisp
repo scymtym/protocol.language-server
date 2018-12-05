@@ -7,13 +7,16 @@
 
 ;;; `error'
 
-(defclass error (message)
+(defclass error () ; TODO necessary?
   ((%code      :initarg :code
                :reader  code)
    (%message   :initarg :message
                :reader  message)
    (%backtrace :initarg :backtrace
                :reader  backtrace)))
+
+(defun make-error (code message)
+  (make-instance 'error :code code :message message))
 
 (defmethod print-items:print-items append ((object error))
   `((:code    ,(code object)    "~D")
@@ -34,12 +37,17 @@
 (defmethod to-alist ((message call-message))
   `((:jsonrpc . "2.0")
     (:method  . ,(method message))
-    (:params  . ,(arguments message))))
+    (:params  . ,(plist-alist (arguments message)))))
 
 ;;; `notification'
 
 (defclass notification (call-message)
   ())
+
+(defun make-notification (method &rest arguments &key &allow-other-keys)
+  (make-instance 'notification
+                 :method    method
+                 :arguments arguments))
 
 ;;; `id-message'
 
@@ -56,17 +64,28 @@
                    call-message)
   ())
 
+(defun make-request (id method &rest arguments &key &allow-other-keys)
+  (make-instance 'request
+                 :id        id
+                 :method    method
+                 :arguments arguments))
+
+(defmethod to-alist ((message request))
+  `((:jsonrpc . "2.0")
+    (:id      . ,(id message))
+    (:method  . ,(method message))
+    (:params  . ,(plist-alist (arguments message)))))
+
 ;;; `response'
 
 (defclass response (id-message)
   ((value :initarg :value
-          :reader  value)))
+          :reader  value))) ; TODO rename to result
+
+(defun make-response (id value)
+  (make-instance 'response :id id :value value))
 
 (defmethod to-alist ((message response))
   `((:jsonrpc . "2.0")
     (:id      . ,(id message))
-    ,(value message)))
-
-(make-instance 'error :code 2 :message "bla bla")
-(make-instance 'request :method "textDocument/hover" :id 6)
-(to-alist (make-instance 'notification :method "textDocument/hover" :arguments '()))
+    (:result  . ,(value message))))
