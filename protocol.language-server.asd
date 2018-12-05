@@ -86,7 +86,9 @@
                  :serial     t
                  :components ((:file "package")
 
-                              (:file "workspace"))))
+                              (:file "workspace")
+
+                              (:file "document-methods"))))
 
   :perform     (test-op (operation component)
                  (uiop:symbol-call '#:protocol.language-server.test '#:run-tests)))
