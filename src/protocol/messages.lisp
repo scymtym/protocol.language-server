@@ -115,42 +115,75 @@
 
 ;;; Position type
 
-(defun parse-position (object)
+(defmethod parse ((data t) (message-class (eql 'position)))
   (make-instance 'text.source-location::line+column-position
-                 :line   (expect-property object :line      'non-negative-integer)
-                 :column (expect-property object :character 'non-negative-integer)))
+                 :line   (expect-property data :line      'non-negative-integer)
+                 :column (expect-property data :character 'non-negative-integer)))
+
+(defmethod unparse ((message text.source-location::line+column-position))
+  `((:line      . ,(text.source-location:line   message))
+    (:character . ,(text.source-location:column message))))
+
+#+sbcl
+(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
+                            (function parse-position :replacement parse)
+                            (function unparse-position :replacement unparse)))
+
+(defun parse-position (object)
+  (parse object 'position))
 
 (defun unparse-position (position)
-  `((:line      . ,(text.source-location:line   position))
-    (:character . ,(text.source-location:column position))))
+  (unparse position))
 
 ;;; Range type
 
-(defun parse-range (object)
+(defmethod parse ((data t) (message-class (eql 'text.source-location:range)))
   (text.source-location:make-range
-   (parse-position (expect-property object :start 'cons))
-   (parse-position (expect-property object :end   'cons))))
+   (parse (expect-property data :start 'cons) 'position)
+   (parse (expect-property data :end   'cons) 'position)))
+
+(defmethod unparse ((message text.source-location:range))
+  `((:start . ,(unparse (text.source-location:start message)))
+    (:end   . ,(unparse (text.source-location:end message)))))
+
+#+sbcl
+(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
+                            (function parse-range :replacement parse)
+                            (function unparse-range :replacement unparse)))
+
+(defun parse-range (object)
+  (parse object 'text.source-location:range))
 
 (defun unparse-range (range)
-  `((:start . ,(unparse-position (text.source-location:start range)))
-    (:end   . ,(unparse-position (text.source-location:end range)))))
+  (unparse range))
 
 ;;; Location type
 
-(defun parse-location (object)
-  (let ((uri   (expect-property object :uri   'string))
-        (range (expect-property object :range 'cons)))
+(defmethod parse ((data t) (message-class (eql 'text.source-location:location)))
+  (let ((uri   (expect-property data :uri   'string))
+        (range (expect-property data :range 'cons)))
     (make-instance 'text.source-location:location
                    :source (text.source-location:make-source uri)
-                   :range  (parse-range range))))
+                   :range  (parse range 'text.source-location:range))))
 
-(defun unparse-location (location)
+(defmethod unparse ((message text.source-location:location))
   (let ((name (text.source-location:name
-               (text.source-location:source location))))
+               (text.source-location:source message))))
     `((:uri   . ,(typecase name
                    (pathname (format nil "file://~A" name))
                    (t        name)))
-      (:range . ,(unparse-range (text.source-location:range location))))))
+      (:range . ,(unparse (text.source-location:range message))))))
+
+#+sbcl
+(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
+                            (function parse-location :replacement parse)
+                            (function unparse-location :replacement unparse)))
+
+(defun parse-location (object)
+  (parse object 'text.source-location:location))
+
+(defun unparse-location (location)
+  (unparse location))
 
 ;;;
 
@@ -174,7 +207,7 @@
 (defun parse-text-document-content-change (thing)
   (list (expect-property thing :text 'string)
         (when-let ((range (maybe-property thing :range 'cons)))
-          (parse-range range))
+          (parse range 'text.source-location:range))
         (when-let ((range-length (maybe-property thing :range--length 'string))) ; TODO why string?
           (parse-integer range-length))))
 
@@ -364,7 +397,7 @@
                        (map 'list #'value (content result)))))
    `((:contents  . ,(unparse-markup-content (make-markup-content value kind)))
      ,@(when-let ((range (range result)))
-         `((:range . ,(unparse-range range)))))))
+         `((:range . ,(unparse range)))))))
 
 ;;; Document Highlight
 
@@ -471,12 +504,12 @@
   (etypecase diagnostic
     (diagnostic
      (let+ (((&accessors-r/o annotation message) diagnostic))
-       `((:range    . ,(unparse-range (text.source-location:range annotation)))
+       `((:range    . ,(unparse (text.source-location:range annotation)))
          (:severity . ,(unparse-severity (text.source-location:kind annotation)))
          (:message  . ,(format nil "~A: ~A"
                                message (text.source-location:text annotation))))))
     (text.source-location:annotation
-     `((:range    . ,(unparse-range (text.source-location:range diagnostic)))
+     `((:range    . ,(unparse (text.source-location:range diagnostic)))
        (:severity . ,(unparse-severity (text.source-location:kind diagnostic)))
        (:message  . ,(text.source-location:text diagnostic))))))
 

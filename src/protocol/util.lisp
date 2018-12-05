@@ -90,7 +90,7 @@
             (let+ (((&flet unparser (type)
                       (typecase type
                         ((member string) nil)
-                        (t               (symbolicate '#:unparse- type)))))
+                        (t               'unparse))))
                    ((&flet unparse-value (type value-form)
                       (cond
                         ((typep type '(cons (eql list-of)))
