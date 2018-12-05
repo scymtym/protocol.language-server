@@ -9,7 +9,7 @@
 (defmethod initialize-instance :after
     ((instance diagnostics-contributors-mixin)
      &key
-     (diagnostics-contributors (make-diagnostics-contributors instance)))
+     (diagnostics-contributors (make-contributors instance 'diagnostics)))
   (setf (%diagnostics-contributors instance) diagnostics-contributors))
 
 (defmethod diagnostics ((workspace t)
@@ -26,7 +26,7 @@
 (defmethod initialize-instance :after
     ((instance context-contributors-mixin)
      &key
-     (context-contributors (make-context-contributors instance)))
+     (context-contributors (make-contributors instance 'context)))
   (setf (%context-contributors instance) context-contributors))
 
 (defmethod contexts ((workspace t)
@@ -45,7 +45,7 @@
 (defmethod initialize-instance :after
     ((instance hover-contributors-mixin)
      &key
-     (hover-contributors (make-hover-contributors instance)))
+     (hover-contributors (make-contributors instance 'hover)))
   (setf (%hover-contributors instance) hover-contributors))
 
 (defmethod methods:hover ((workspace t)
@@ -64,7 +64,7 @@
 (defmethod initialize-instance :after
     ((instance completion-contributors-mixin)
      &key
-     (completion-contributors (make-completion-contributors instance)))
+     (completion-contributors (make-contributors instance 'completion)))
   (setf (%completion-contributors instance) completion-contributors))
 
 (defmethod methods:completion ((workspace t)

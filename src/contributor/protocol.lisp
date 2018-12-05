@@ -20,7 +20,13 @@
 
 (defgeneric make-diagnostics-contributors (document)
   (:documentation
-   "Return a list of diagnostics contributors suitable for DOCUMENT."))
+   "Return a list of diagnostics contributors suitable for DOCUMENT.")
+  (:method ((document t))
+    (make-contributors document 'diagnostics)))
+
+#+sbcl
+(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
+                            (function make-diagnostics-contributors :replacement make-contributors)))
 
 ;;; Default behavior
 
@@ -42,9 +48,13 @@
 
 (defgeneric context-contributions (workspace document position contributor))
 
-;; TODO If we had something like (adopt workspace document), we could call
-;; this with a workspace argument
-(defgeneric make-context-contributors (document))
+(defgeneric make-context-contributors (document)
+  (:method ((document t))
+    (make-contributors document 'context)))
+
+#+sbcl
+(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
+                            (function make-context-contributors :replacement make-contributors)))
 
 ;;; Default behavior
 
@@ -67,7 +77,13 @@
   (:method ((workspace t) (document t) (context t) (contributor t))
     '()))
 
-(defgeneric make-hover-contributors (document))
+(defgeneric make-hover-contributors (document)
+  (:method ((document t))
+    (make-contributors document 'hover)))
+
+#+sbcl
+(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
+                            (function make-hover-contributors :replacement make-contributors)))
 
 ;;; Default behavior
 
@@ -103,7 +119,13 @@
   (:method ((workspace t) (document t) (context t) (contributor t))
     '()))
 
-(defgeneric make-completion-contributors (document))
+(defgeneric make-completion-contributors (document)
+  (:method ((document t))
+    (make-contributors document 'completion)))
+
+#+sbcl
+(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
+                            (function make-completion-contributors :replacement make-contributors)))
 
 ;;; Default behavior
 
@@ -117,3 +139,11 @@
                                         contributor context)
                             (completion-contributions workspace document context contributor)))
                         contributors contexts)))
+
+;;; Contributor creation protocol
+
+;; TODO If we had something like (adopt workspace document), we could call
+;; this with a workspace argument
+(defgeneric make-contributors (document aspect)
+  (:documentation
+   "Return a list of contributors for ASPECT of document."))

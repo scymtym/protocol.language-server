@@ -38,6 +38,10 @@
 
    #:make-completion-contributors)
 
+  ;; Contributor creation protocol
+  (:export
+   #:make-contributors)
+
   ;; Mixins
   (:export
    #:diagnostics-contributors-mixin
