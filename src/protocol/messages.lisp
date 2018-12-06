@@ -6,8 +6,6 @@
 
 (cl:in-package #:protocol.language-server.protocol)
 
-;; TODO make parse and unparse generic functions
-
 (defconstant +false+ '+false+)
 
 (defmethod cl-json:encode-json ((object (eql +false+)) &optional stream)
