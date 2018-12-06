@@ -25,11 +25,11 @@
 ;;; `call-message'
 
 (defclass call-message (message)
-  ((method    :initarg :method
-              :type    string
-              :reader  method)
-   (arguments :initarg :arguments
-              :reader  arguments)))
+  ((%method    :initarg :method
+               :type    string
+               :reader  method)
+   (%arguments :initarg :arguments
+               :reader  arguments)))
 
 (defmethod print-items:print-items append ((object call-message))
   `((:method ,(method object) "~A")))
@@ -52,8 +52,8 @@
 ;;; `id-message'
 
 (defclass id-message ()
-  ((id :initarg :id
-       :reader  id)))
+  ((%id :initarg :id
+        :reader  id)))
 
 (defmethod print-items:print-items append ((object id-message))
   `((:id ,(id object) " [~D]" ((:after :method)))))
@@ -79,13 +79,13 @@
 ;;; `response'
 
 (defclass response (id-message)
-  ((value :initarg :value
-          :reader  value))) ; TODO rename to result
+  ((%result :initarg :result
+            :reader  result)))
 
-(defun make-response (id value)
-  (make-instance 'response :id id :value value))
+(defun make-response (id result)
+  (make-instance 'response :id id :result result))
 
 (defmethod to-alist ((message response))
   `((:jsonrpc . "2.0")
     (:id      . ,(id message))
-    (:result  . ,(value message))))
+    (:result  . ,(result message))))
