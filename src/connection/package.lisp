@@ -18,12 +18,18 @@
   (:local-nicknames
    (#:transport #:protocol.language-server.transport))
 
+  ;; Message protocol
+  (:export
+   #:to-alist)
+
   ;; Messages
   (:export
    #:error
    #:code
    #:message
    #:backtrace
+
+   #:make-error
 
    #:call-message
    #:method

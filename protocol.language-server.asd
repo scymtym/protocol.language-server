@@ -90,6 +90,13 @@
 
                               (:file       "document-methods")))
 
+                (:module     "connection"
+                 :pathname   "test/connection"
+                 :depends-on ("test")
+                 :serial     t
+                 :components ((:file       "package")
+                              (:file       "messages")))
+
                 (:module     "protocol"
                  :pathname   "test/protocol"
                  :depends-on ("test")

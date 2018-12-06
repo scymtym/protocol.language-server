@@ -7,7 +7,7 @@
 
 ;;; `error'
 
-(defclass error () ; TODO necessary?
+(defclass error (print-items:print-items-mixin) ; TODO necessary?
   ((%code      :initarg :code
                :reader  code)
    (%message   :initarg :message
