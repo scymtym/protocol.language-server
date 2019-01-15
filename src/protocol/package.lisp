@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for the protocol module.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -9,6 +9,9 @@
    #:cl
    #:alexandria
    #:let-plus)
+
+  (:shadow
+   #:documentation)
 
   ;; Serialization protocol
   (:export

@@ -397,6 +397,24 @@
      ,@(when-let ((range (range result)))
          `((:range . ,(unparse range)))))))
 
+;;; Signature Help
+
+(define-message-class parameter-information (label &optional documentation)
+  ((label         :type (or string ; TODO
+                            ))
+   (documentation :type (or null string markup-content))))
+
+(define-message-class signature-information (label parameters &key documentation)
+  ((label :type string)
+   (documentation :type (or null string markup-content))
+   (parameters    :type (list-of parameter-information))))
+
+(define-message-class signature-help
+    (signatures &optional active-signature active-parameter)
+  ((signatures       :type (list-of signature-information))
+   (active-signature :type (or null integer))
+   (active-parameter :type (or null integer))))
+
 ;;; Document Highlight
 
 (define-enum highlight-kind
