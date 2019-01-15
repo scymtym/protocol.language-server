@@ -1,6 +1,6 @@
 ;;;; util.lisp --- Utilities used in the protocol module.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -26,8 +26,8 @@
          (,@(if test
                 `(switch (value :test ,test))
                 `(case value))
-           ,@(map 'list #'reverse names-and-values)
-           (t (error "Invalid ~S value: ~S" ',name value))))
+          ,@(map 'list #'reverse names-and-values)
+          (t (error "Invalid ~S value: ~S" ',name value))))
 
        (declaim (ftype (function (,name) (values ,value-type &optional))
                        ,unparse-name))
@@ -47,7 +47,7 @@
                                 (property (make-keyword name))
                                 &allow-other-keys))
             `(,name :initarg ,initarg :type ,type :reader ,reader :property ,property
-                    ,@(remove-from-plist args :initarg :type :reader :property))))
+              ,@(remove-from-plist args :initarg :type :reader :property))))
          (slots (map 'list (compose #'expand #'ensure-list) slots))
          ((&flet+ slot->slot ((name &rest args &key type &allow-other-keys))
             (let ((type (typecase type
@@ -88,9 +88,12 @@
               (list initarg (parse-value `(expect-property data ,property ',type))))))
          ((&flet+ slot->unparse ((name &key type reader property &allow-other-keys))
             (let+ (((&flet unparser (type)
-                      (typecase type
-                        ((member string) nil)
-                        (t               'unparse))))
+                      (cond ((eq type 'string)
+                             nil)
+                            ((find-class type nil)
+                             'unparse)
+                            (t
+                             (symbolicate '#:unparse- type)))))
                    ((&flet unparse-value (type value-form)
                       (cond
                         ((typep type '(cons (eql list-of)))
