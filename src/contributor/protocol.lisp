@@ -108,8 +108,6 @@
 
 ;;; Contributor creation protocol
 
-;; TODO If we had something like (adopt workspace document), we could call
-;; this with a workspace argument
 (defgeneric make-contributors (document aspect)
   (:documentation
    "Return a list of contributors for ASPECT of document."))

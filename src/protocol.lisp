@@ -1,6 +1,6 @@
 ;;;; protocol.lisp --- Protocol provided by the language-server module.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -78,6 +78,12 @@
 (defgeneric (setf find-document) (new-value uri container)
   (:documentation
    "Associate the document NEW-VALUE to URI in CONTAINER."))
+
+(defgeneric note-adopted (container document)
+  (:method-combination progn)
+  (:method progn ((container t) (document t)))
+  (:documentation
+   "Called when DOCUMENT is added to CONTAINER"))
 
 ;;; Method dispatch protocol
 

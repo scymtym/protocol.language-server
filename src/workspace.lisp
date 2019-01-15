@@ -1,6 +1,6 @@
 ;;;; workspace.lisp --- Root path and a collection of documents.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -33,6 +33,11 @@
                                  (uri       string)
                                  (container document-container-mixin))
   (setf (gethash uri (%documents container)) new-value))
+
+(defmethod (setf find-document) :after ((new-value t)
+                                        (uri       string)
+                                        (container document-container-mixin))
+  (note-adopted container new-value))
 
 (defmethod (setf find-document) ((new-value (eql nil))
                                  (uri       string)

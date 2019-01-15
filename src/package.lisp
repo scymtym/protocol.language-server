@@ -53,6 +53,7 @@
   (:export
    #:document-count
    #:find-document ; also `setf'
+   #:note-adopted
 
    #:document-container-mixin)
 

@@ -1,12 +1,25 @@
 ;;;; document.lisp --- Versioned text document.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:protocol.language-server)
 
-(defclass document (print-items:print-items-mixin)
+;;; `workspace-member-mixin'
+
+(defclass workspace-member-mixin ()
+  ((%workspace :initarg  :workspace
+               :accessor workspace
+               :initform nil)))
+
+(defmethod note-adopted progn ((workspace t) (document workspace-member-mixin))
+  (setf (workspace document) workspace))
+
+;;; `document'
+
+(defclass document (workspace-member-mixin
+                    print-items:print-items-mixin)
   ((language :initarg  :language
              :type     keyword
              :reader   language)
