@@ -10,33 +10,34 @@
 
   ;; Diagnostics contributor protocol
   (:export
+   #:diagnostic ; name of the aspect
+
    #:diagnostics
    #:diagnostics-using-contributors
-   #:diagnostics-contributions
-
-   #:make-diagnostics-contributors)
+   #:diagnostics-contributions)
 
   ;; Context contributor protocol
   (:export
+   #:context ; name of the aspect
+
    #:contexts
    #:contexts-using-contributors
-   #:context-contributions
-
-   #:make-context-contributors)
+   #:context-contributions)
 
   ;; Hover contributor protocol
   (:export
-   #:hover-using-contributors
-   #:hover-contribution
+   #:hover ; name of the aspect
 
-   #:make-hover-contributors)
+   #:hover-using-contributors
+   #:hover-contribution)
 
   ;; Completion contributor protocol
   (:export
-   #:completions-using-contributors
-   #:completion-contributions
+   #:completion
 
-   #:make-completion-contributors)
+   #:completions-using-contributors
+   #:completion-contributions)
+
 
   ;; Contributor creation protocol
   (:export

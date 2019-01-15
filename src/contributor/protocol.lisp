@@ -18,16 +18,6 @@
   (:documentation
    "Return CONTRIBUTOR's diagnostics for DOCUMENT."))
 
-(defgeneric make-diagnostics-contributors (document)
-  (:documentation
-   "Return a list of diagnostics contributors suitable for DOCUMENT.")
-  (:method ((document t))
-    (make-contributors document 'diagnostics)))
-
-#+sbcl
-(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
-                            (function make-diagnostics-contributors :replacement make-contributors)))
-
 ;;; Default behavior
 
 (defmethod diagnostics-using-contributors ((workspace    t)
@@ -47,14 +37,6 @@
 (defgeneric contexts-using-contributors (workspace document position contributors))
 
 (defgeneric context-contributions (workspace document position contributor))
-
-(defgeneric make-context-contributors (document)
-  (:method ((document t))
-    (make-contributors document 'context)))
-
-#+sbcl
-(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
-                            (function make-context-contributors :replacement make-contributors)))
 
 ;;; Default behavior
 
@@ -76,14 +58,6 @@
   (:argument-precedence-order contributor context document workspace)
   (:method ((workspace t) (document t) (context t) (contributor t))
     '()))
-
-(defgeneric make-hover-contributors (document)
-  (:method ((document t))
-    (make-contributors document 'hover)))
-
-#+sbcl
-(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
-                            (function make-hover-contributors :replacement make-contributors)))
 
 ;;; Default behavior
 
@@ -118,14 +92,6 @@
   (:argument-precedence-order contributor context document workspace)
   (:method ((workspace t) (document t) (context t) (contributor t))
     '()))
-
-(defgeneric make-completion-contributors (document)
-  (:method ((document t))
-    (make-contributors document 'completion)))
-
-#+sbcl
-(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
-                            (function make-completion-contributors :replacement make-contributors)))
 
 ;;; Default behavior
 
