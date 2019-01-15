@@ -1,6 +1,6 @@
 ;;;; language-server.lisp --- TODO.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -10,12 +10,16 @@
 
 (defun language-server (input output
                         &key
-                        (connection-class nil connection-class-supplied?)
-                        (context-class    'context))
+                        (connection-class nil      connection-class-supplied?)
+                        (context-class    'context)
+                        (capabilities     '()))
   (let* ((connection (apply #'conn:make-connection input output
                             (when connection-class-supplied?
                               (list :class connection-class))))
-         (context    (make-instance context-class :connection connection)))
+         (context    (apply #'make-context connection
+                            :capabilities capabilities
+                            (when context-class-supplied?
+                              (list :class context-class)))))
     (process-requests connection context)))
 
 (defun process-requests (connection context)

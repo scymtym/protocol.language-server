@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for the language-server module.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -23,7 +23,10 @@
    #:connection
    #:capabilities
    #:workspace
-   #:make-workspace)
+   #:make-workspace
+
+   #:context
+   #:make-context)
 
   ;; Workspace protocol and class
   (:export

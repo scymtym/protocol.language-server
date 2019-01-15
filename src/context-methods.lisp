@@ -1,6 +1,6 @@
 ;;;; context-methods.lisp --- Methods and dispatch for context.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -15,13 +15,12 @@
                            capabilities
                            initialization-options)
   ;; Create and initialize workspace.
-  (setf (%workspace object) (make-workspace object #|later process-id|# root-uri root-path
-                                            ; later capabilities initialization-options
-                                            ))
+  (setf (%workspace object)          (make-workspace object #|later process-id|# root-uri root-path
+                                        ; later capabilities initialization-options
+                                                     )
+        (client-capabilities object) capabilities)
   ;; Compute capabilities and send as reply.
-  `((:capabilities . ,(capabilities object)
-                   #+TODO (proto::unparse-server-capabilities
-                           (capabilities object)))))
+  `((:capabilities . ,(proto:unparse (server-capabilities object)))))
 
 ;; TODO what is this supposed to do?
 (defmethod process-method ((object context) (method (eql :initialized)) &key))
