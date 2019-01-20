@@ -99,12 +99,13 @@
                                            (document     t)
                                            (contexts     list)
                                            (contributors list))
-  (flatten (map-product (lambda (contributor context)
-                          (with-simple-restart
-                              (continue "~@<Skip completion contributor ~A in context ~A.~@:>"
-                                        contributor context)
-                            (completion-contributions workspace document context contributor)))
-                        contributors contexts)))
+  (flet ((one-contributor (contributor context)
+           (with-simple-restart
+               (continue "~@<Skip completion contributor ~A in context ~A.~@:>"
+                         contributor context)
+             (completion-contributions workspace document context contributor))))
+    (flatten (map-product #'one-contributor contributors contexts))))
+
 ;;; Definition contributor protocol
 
 (defgeneric definitions-using-contributors (workspace document context contributors))
