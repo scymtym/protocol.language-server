@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for the methods module.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -31,6 +31,7 @@
 
    #:completion
    #:hover
+   #:signature-help
    #:definition
    #:references
    #:highlight-in-document

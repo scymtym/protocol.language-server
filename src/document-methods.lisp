@@ -62,6 +62,16 @@
       (proto:unparse-hover-result result))))
 
 (defmethod process-method ((object document)
+                           (method (eql :signaturehelp))
+                           &key
+                           position)
+  (let* ((position (text.source-location::attach-text
+                    (proto:parse position 'position) (text object)))
+         (result   (methods:signature-help *workspace* object position)))
+    (when result
+      (proto:unparse result))))
+
+(defmethod process-method ((object document)
                            (method (eql :definition))
                            &key
                            position)
