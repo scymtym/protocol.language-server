@@ -32,9 +32,8 @@
 (defmethod contexts ((workspace t)
                      (document  context-contributors-mixin)
                      (position  t))
-  (protocol.language-server::debug1
-   (contexts-using-contributors
-    workspace document position (context-contributors document))))
+  (contexts-using-contributors
+   workspace document position (context-contributors document)))
 
 ;;; `hover-contributors-mixin'
 

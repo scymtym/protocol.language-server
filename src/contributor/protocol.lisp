@@ -73,11 +73,11 @@
                                  contributor context)
                      (let+ (((&values contents range) ; TODO multiple ranges? TODO should contributor return `proto:hover-result's and we merge them here?
                              (hover-contribution workspace document context contributor)))
-                       (log:warn contributor contents range)
+                       (log:warn contributor context contents range)
                        (when contents
-                         (when (not result-range) ; TODO if both, compare omehow
+                         (when (not result-range) ; TODO if both, compare somehow
                            (setf result-range range))
-                         (appendf result-contents contents)))))
+                         (appendf result-contents (ensure-list contents))))))
                  contributors contexts)
     (when result-contents
       (proto:make-hover-result result-contents
