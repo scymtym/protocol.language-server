@@ -105,6 +105,49 @@
                                         contributor context)
                             (completion-contributions workspace document context contributor)))
                         contributors contexts)))
+;;; Definition contributor protocol
+
+(defgeneric definitions-using-contributors (workspace document context contributors))
+
+(defgeneric definition-contributions (workspace document context contributor)
+  (:argument-precedence-order contributor context document workspace)
+  (:method ((workspace t) (document t) (context t) (contributor t))
+    '()))
+
+;;; Default behavior
+
+(defmethod definitions-using-contributors ((workspace    t)
+                                           (document     t)
+                                           (contexts     list)
+                                           (contributors list))
+  (flet ((one-contributor (contributor context)
+           (with-simple-restart
+               (continue "~@<Skip definition contributor ~A in context ~A.~@:>"
+                         contributor context)
+             (definition-contributions workspace document context contributor))))
+    (flatten (map-product #'one-contributor contributors contexts))))
+
+;;; Reference contributor protocol
+
+(defgeneric references-using-contributors (workspace document context contributors))
+
+(defgeneric reference-contributions (workspace document context contributor)
+  (:argument-precedence-order contributor context document workspace)
+  (:method ((workspace t) (document t) (context t) (contributor t))
+    '()))
+
+;;; Default behavior
+
+(defmethod references-using-contributors ((workspace    t)
+                                          (document     t)
+                                          (contexts     list)
+                                          (contributors list))
+  (flet ((one-contributor (contributor context)
+           (with-simple-restart
+               (continue "~@<Skip reference contributor ~A in context ~A.~@:>"
+                         contributor context)
+             (reference-contributions workspace document context contributor))))
+    (flatten (map-product #'one-contributor contributors contexts))))
 
 ;;; Contributor creation protocol
 

@@ -38,6 +38,19 @@
    #:completions-using-contributors
    #:completion-contributions)
 
+  ;; Definition contributor protocol
+  (:export
+   #:definition ; name of the aspect
+
+   #:definitions-using-contributors
+   #:definition-contributions)
+
+  ;; Reference contributor protocol
+  (:export
+   #:reference ; name of the aspect
+
+   #:references-using-contributors
+   #:reference-contributions)
 
   ;; Contributor creation protocol
   (:export
@@ -55,4 +68,10 @@
    #:hover-contributors
 
    #:completion-contributors-mixin
-   #:completion-contributors))
+   #:completion-contributors
+
+   #:definition-contributors-mixin
+   #:definition-contributors
+
+   #:reference-contributors-mixin
+   #:reference-contributors))
