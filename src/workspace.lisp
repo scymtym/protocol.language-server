@@ -47,9 +47,9 @@
 ;;; `document-class-mixin'
 
 (defclass document-class-mixin ()
-  ((document-class :initarg  :document-class
-                   :reader   document-class
-                   :initform 'document)))
+  ((%document-class :initarg  :document-class
+                    :reader   document-class
+                    :initform 'document)))
 
 (defmethod make-document ((container document-class-mixin)
                           (language  t)
