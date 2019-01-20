@@ -42,13 +42,16 @@
    :language (error "missing required initarg :language")
    :version  (error "missing required initarg :version")))
 
-(defmethod shared-initialize :after ((instance   document)
-                                     (slot-names t)
-                                     &key
-                                     (text nil text-supplied?))
-
-  (when text-supplied?
-    (setf (%text instance) text)))
+(macrolet
+    ((define-method (name)
+       `(defmethod ,name :around ((instance document)
+                                  &key
+                                  (text nil text-supplied?))
+          (call-next-method)
+          (when text-supplied?
+            (setf (text instance) text)))))
+  (define-method initialize-instance)
+  (define-method reinitialize-instance))
 
 (defmethod print-items:print-items append ((object document))
   `((:language   ,(language object)          "~A")
