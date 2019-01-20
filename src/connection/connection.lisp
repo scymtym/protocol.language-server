@@ -1,17 +1,23 @@
 ;;;; connection.lisp --- Connection class, reading/writing messages.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
 (cl:in-package #:protocol.language-server.connection)
 
+(macrolet ((define (name predicate)
+             `(defun ,name (thing)
+                (when (streamp thing) (,predicate thing)))))
+  (define %input-stream-p  input-stream-p)
+  (define %output-stream-p output-stream-p))
+
 (defclass connection ()
   ((input  :initarg  :input
-           :type     (satisfies input-stream-p)
+           :type     (and stream (satisfies %input-stream-p))
            :reader   input)
    (output :initarg  :output
-           :type     (satisfies output-stream-p)
+           :type     (and stream (satisfies %output-stream-p))
            :reader   output))
   (:default-initargs
    :input  (cl:error "missing initarg :input")
