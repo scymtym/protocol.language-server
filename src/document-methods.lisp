@@ -1,6 +1,6 @@
 ;;;; document-methods.lisp --- Adapters for methods of the TextDocument interface.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -34,7 +34,7 @@
                            &key
                            position)
   (let+ ((position (text.source-location::attach-text
-                    (proto:parse-position position) (text object)))
+                    (proto:parse position 'position) (text object)))
          ((&values items incomplete?)
           (methods:completion *workspace* object position))
          ((&flet unparse-item (item)
@@ -57,9 +57,10 @@
                            position)
   (let* ((position (text.source-location::attach-text
                     (proto:parse position 'position) (text object)))
-         (result   (methods:hover nil object position)))
-    (when result
-      (proto:unparse-hover-result result))))
+         (result   (methods:hover *workspace* object position)))
+    (if result
+        (proto:unparse-hover-result result)
+        (make-hash-table)))) ; TODO hack for Emacs' lsp-mode but null is a legal response
 
 (defmethod process-method ((object document)
                            (method (eql :signaturehelp))
@@ -75,9 +76,11 @@
                            (method (eql :definition))
                            &key
                            position)
-  (let ((position (text.source-location::attach-text
-                   (proto:parse position 'position) (text object))))
-    (methods:definition nil object position)))
+  (let* ((position (text.source-location::attach-text
+                    (proto:parse position 'position) (text object)))
+         (result   (methods:definition *workspace* object position)))
+    (when result
+      (proto:unparse result))))
 
 (defmethod process-method ((object document)
                            (method (eql :references))
@@ -86,8 +89,8 @@
                            include-declaration)
   (let ((position (text.source-location::attach-text
                    (proto:parse position 'position) (text object))))
-    (map 'vector #'proto:unparse-location
-         (methods:references nil object position include-declaration))))
+    (map 'vector #'proto:unparse
+         (methods:references *workspace* object position include-declaration))))
 
 (defmethod process-method ((object document)
                            (method (eql :documenthighlight))
@@ -97,7 +100,7 @@
   (let* ((position   (text.source-location::attach-text
                       (proto:parse position 'position) (text object)))
          (highlights (methods:highlight-in-document
-                      nil object version position)))
+                      *workspace* object version position)))
     (map 'vector #'proto:unparse-highlight highlights)))
 
 (defmethod process-method ((object document)
