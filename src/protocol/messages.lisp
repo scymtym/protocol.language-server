@@ -1,6 +1,6 @@
 ;;;; messages.lisp --- Messages specified by the language server protocol.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -119,6 +119,10 @@
                  :column (expect-property data :character 'non-negative-integer)))
 
 (defmethod unparse ((message text.source-location::line+column-position))
+  `((:line      . ,(text.source-location:line   message))
+    (:character . ,(text.source-location:column message))))
+
+(defmethod unparse ((message text.source-location::index+info-position))
   `((:line      . ,(text.source-location:line   message))
     (:character . ,(text.source-location:column message))))
 
@@ -367,6 +371,10 @@
 
 ;;; Hover result
 
+#+later (define-message-class hover-result (content range)
+  ((content :type (list-of markup-content))
+   (range   :type text.source-location:range)))
+
 ;; TODO in case of markup-content, can only have a single content
 ;; TODO rename content -> contents
 (defclass hover-result ()               ; TODO rename to just hover?
@@ -570,6 +578,6 @@
 ;;; Document Link
 
 (define-message-class document-link (range &optional target)
-    ((range  :type     text.source-location:range)
-     (target :type     string ; (or null string)
-             :initform nil)))
+  ((range  :type     text.source-location:range)
+   (target :type     string ; (or null string)
+           :initform nil)))
