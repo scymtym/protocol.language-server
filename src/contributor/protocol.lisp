@@ -73,7 +73,6 @@
                                  contributor context)
                      (let+ (((&values contents range) ; TODO multiple ranges? TODO should contributor return `proto:hover-result's and we merge them here?
                              (hover-contribution workspace document context contributor)))
-                       (log:warn contributor context contents range)
                        (when contents
                          (when (not result-range) ; TODO if both, compare somehow
                            (setf result-range range))
@@ -109,7 +108,6 @@
                      (let+ (((&values signatures active-signature active-parameter)
                              (signature-contributions
                               workspace document context contributor)))
-                       (log:warn contributor context signatures active-signature active-parameter)
                        (appendf result-signatures signatures)
                        (unless result-active-signature
                          (setf result-active-signature active-signature
