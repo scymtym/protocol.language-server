@@ -1,4 +1,4 @@
-;;;; language-server.lisp --- TODO.
+;;;; language-server.lisp --- Entry point and message processing loop.
 ;;;;
 ;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
@@ -11,7 +11,7 @@
 (defun language-server (input output
                         &key
                         (connection-class nil      connection-class-supplied?)
-                        (context-class    'context)
+                        (context-class    'context context-class-supplied?)
                         (capabilities     '()))
   (let* ((connection (apply #'conn:make-connection input output
                             (when connection-class-supplied?
