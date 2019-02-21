@@ -54,6 +54,25 @@
     (hover-using-contributors
      workspace document contexts (hover-contributors document))))
 
+;;; `signature-contributors-mixin'
+
+(defclass signature-contributors-mixin ()
+  ((%signature-contributors :reader  signature-contributors
+                            :writer  (setf %signature-contributors))))
+
+(defmethod initialize-instance :after
+    ((instance signature-contributors-mixin)
+     &key
+     (signature-contributors (make-contributors instance 'signature)))
+  (setf (%signature-contributors instance) signature-contributors))
+
+(defmethod methods:signature-help ((workspace t)
+                                   (document  signature-contributors-mixin)
+                                   (position  t))
+  (let ((contexts (contexts workspace document position)))
+    (signatures-using-contributors
+     workspace document contexts (signature-contributors document))))
+
 ;;; `completion-contributors-mixin'
 
 (defclass completion-contributors-mixin ()

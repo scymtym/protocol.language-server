@@ -84,6 +84,41 @@
                                :range       result-range
                                :markup-kind :markdown))))
 
+;;; Signature contributor protocol
+
+(defgeneric signatures-using-contributors (workspace document contexts contributors))
+
+(defgeneric signature-contributions (workspace document context contributor)
+  (:argument-precedence-order contributor context document workspace)
+  (:method ((workspace t) (document t) (context t) (contributor t))
+    '()))
+
+;;; Default behavior
+
+(defmethod signatures-using-contributors ((workspace    t)
+                                          (document     t)
+                                          (contexts     list)
+                                          (contributors list))
+  (let ((result-signatures       '())
+        (result-active-signature nil)
+        (result-active-parameter))
+    (map-product (lambda (contributor context)
+                   (with-simple-restart
+                       (continue "~@<Skip signature help contributor ~A in context ~A.~@:>"
+                                 contributor context)
+                     (let+ (((&values signatures active-signature active-parameter)
+                             (signature-contributions
+                              workspace document context contributor)))
+                       (log:warn contributor context signatures active-signature active-parameter)
+                       (appendf result-signatures signatures)
+                       (unless result-active-signature
+                         (setf result-active-signature active-signature
+                               result-active-parameter active-parameter)))))
+                 contributors contexts)
+    (when result-signatures
+      (proto::make-signature-help
+       result-signatures result-active-signature result-active-parameter))))
+
 ;;; Completion contributor protocol
 
 (defgeneric completions-using-contributors (workspace document contexts contributors))

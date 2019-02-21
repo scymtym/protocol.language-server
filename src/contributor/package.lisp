@@ -31,6 +31,13 @@
    #:hover-using-contributors
    #:hover-contribution)
 
+  ;; Signature contributor protocol
+  (:export
+   #:signature ; name of the aspect
+
+   #:signatures-using-contributors
+   #:signature-contributions)
+
   ;; Completion contributor protocol
   (:export
    #:completion
@@ -66,6 +73,9 @@
 
    #:hover-contributors-mixin
    #:hover-contributors
+
+   #:signature-contributors-mixin
+   #:signature-contributors
 
    #:completion-contributors-mixin
    #:completion-contributors
