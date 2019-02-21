@@ -100,16 +100,66 @@
 
      ))
 
-(define-message-class workspace-client-capabilities ()
-  ())
+(define-enum (resource-operation-kind :test #'string=)
+  (:create "create")
+  (:rename "rename")
+  (:delete "delete"))
 
-(define-message-class text-document-client-capabilities ()
-  ())
+(define-enum (failure-handling-kind :test #'string=)
+  (:abort                   "abort")
+  (:transactional           "transactional")
+  (:text-only-transactional "textOnlyTransactional")
+  (:undo                    "undo"))
+
+(define-message-class workspace-edit-capabilities (&key document-changes resource-operations failure-handling)
+  ((document-changes    :type (or null boolean))
+   (resource-operations :type (or null (list-of resource-operation-kind)))
+   (failure-handling    :type (or null failure-handling-kind))))
+
+(define-message-class execute-command-capabilities (&key dynamic-registration)
+  ((dynamic-registration :type (or null boolean))))
+
+(define-message-class workspace-client-capabilities (&key apply-edit workspace-edit execute-command workspace-folders configuration)
+  ((apply-edit        :type (or null boolean))
+   (workspace-edit    :type (or null workspace-edit-capabilities))
+   (execute-command   :type (or null execute-command-capabilities))
+   (workspace-folders :type (or null boolean))
+   (configuration     :type (or null boolean))))
+
+(define-message-class parameter-information-capabilities (&key label-offset-support)
+  ((label-offset-support :type (or null boolean))))
+
+(define-message-class signature-information-capabilities (&key documentation-format parameter-information)
+  ((documentation-format  :type (or null (list-of markup-kind)))
+   (parameter-information :type (or null parameter-information-capabilities))))
+
+(define-message-class signature-help-capabilities (&key dynamic-registration signature-information)
+  ((dynamic-registration  :type (or null boolean))
+   (signature-information :type (or null signature-information-capabilities))))
+
+(define-message-class symbol-kind-capabilities (value-set)
+  ((value-set :type (list-of symbol-kind))))
+
+(define-message-class document-symbol-capabilities (&key dynamic-registration symbol-kind hierarchical-document-symbol-support)
+  ((dynamic-registration                 :type (or null boolean))
+   (symbol-kind                          :type (or null symbol-kind-capabilities))
+   (hierarchical-document-symbol-support :type (or null boolean))))
+
+(define-message-class publish-diagnostics-capabilities (related-information)
+  ((related-information :type (or null boolean))))
+
+(define-message-class text-document-client-capabilities (&key document-symbol publish-diagnostics signature-help)
+  (;; (synchronization     :type (or null synchronization-capabilities))
+   ;; (completion          :type (or null completion-capabilities))
+   ;; (hover               :type (or null hover-capabilities))
+   (signature-help      :type (or null signature-help-capabilities))
+   (document-symbol     :type (or null document-symbol-capabilities))
+   (publish-diagnostics :type (or null publish-diagnostics-capabilities))))
 
 (define-message-class client-capabilities (&key workspace text-document experimental)
   ((workspace     :type (or null workspace-client-capabilities))
    (text-document :type (or null text-document-client-capabilities))
-   (experimental  :type t)))
+   (experimental  :type (or null t))))
 
 ;;; Position type
 
