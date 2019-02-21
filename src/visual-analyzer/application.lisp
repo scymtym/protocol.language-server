@@ -73,12 +73,12 @@
 (defvar *visualizer* nil)
 
 (defun note-context (context)
-  (when *trace*
-    (setf (context *trace*) context)))
+  (when-let ((trace *trace*))
+    (setf (context trace) context)))
 
 (defun add-message (direction message &key backtrace)
-  (when *trace*
-    (add-message! *trace* direction (get-internal-real-time) message)))
+  (when-let ((trace *trace*))
+    (add-message! trace direction (get-internal-real-time) message)))
 
 ;; (defun %add-event (class message)
 ;;   (when *trace*

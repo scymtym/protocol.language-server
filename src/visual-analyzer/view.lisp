@@ -1,6 +1,9 @@
 (cl:in-package #:protocol.language-server.visual-analyzer)
 
-(clim:define-presentation-type document ())
+(clim:define-presentation-type trace-element ())
+
+(clim:define-presentation-type document ()
+  :inherit-from 'trace-element)
 
 (clim:define-presentation-method clim:present ((object t) (type document) stream view &key)
   (progn ; clim:surrounding-output-with-border (stream)
@@ -12,26 +15,30 @@
 
 ;;;
 
-(clim:define-presentation-type message-kind ())
+(clim:define-presentation-type message-kind ()
+  :inherit-from 'trace-element)
 
 (clim:define-presentation-method clim:present ((object t) (type message-kind) stream view &key)
   (clim:with-drawing-options (stream :ink clim:+dark-orange+ :text-family :fix)
     (princ object stream)))
 
-(clim:define-presentation-type request-id ())
+(clim:define-presentation-type request-id ()
+  :inherit-from 'trace-element)
 
 (clim:define-presentation-method clim:present ((object t) (type request-id) stream view &key)
   (clim:with-drawing-options (stream :ink        clim:+dark-slate-blue+
                                      :text-style (clim:make-text-style :fix :bold nil))
     (princ object stream)))
 
-(clim:define-presentation-type interface ())
+(clim:define-presentation-type interface ()
+  :inherit-from 'trace-element)
 
 (clim:define-presentation-method clim:present ((object t) (type interface) stream view &key)
   (clim:with-drawing-options (stream :ink clim:+red+ :text-family :fix)
     (write-string object stream)))
 
-(clim:define-presentation-type message ())
+(clim:define-presentation-type message ()
+  :inherit-from 'trace-element)
 
 (defun present-arguments (arguments stream view)
   (clim:formatting-table (stream)
@@ -104,7 +111,7 @@
     (write-string " " stream)
     (clim:present (con:id object) 'request-id :stream stream :view view)
     (terpri stream)
-    (clim:present (con:value object) 'document :stream stream :view view)))
+    (clim:present (con:result object) 'document :stream stream :view view)))
 
 (clim:define-presentation-method clim:present ((object con:error)
                                                (type   message)
@@ -128,7 +135,8 @@
       (error (condition)
         (write-string "«error printing backtrace»" stream)))))
 
-(clim:define-presentation-type event ())
+(clim:define-presentation-type event ()
+  :inherit-from 'trace-element)
 
 (clim:define-presentation-method clim:present ((object t) (type event) stream view &key)
   (clim:with-drawing-options (stream :ink clim:+dark-magenta+ :text-size :small)
@@ -292,11 +300,13 @@
 ;;;
 
 (defmethod (setf %trace) :after (new-value (object trace-pane))
-  (setf (change-hook new-value)
-        (lambda (index)
-          (clim:queue-event object (make-instance 'changed-event
-                                                  :sheet object
-                                                  :index index)))))
+  (push (lambda (&rest event)
+          (destructuring-case event
+            ((:event-added index)
+             (clim:queue-event object (make-instance 'changed-event
+                                                     :sheet object
+                                                     :index index)))))
+        (change-hook new-value)))
 
 (defclass changed-event (climi::standard-event)
   ((index :initarg :index ; TODO carry the event instead of the index?
