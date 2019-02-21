@@ -119,6 +119,29 @@
       (proto::make-signature-help
        result-signatures result-active-signature result-active-parameter))))
 
+;;; Document highlight contributor protocol
+
+(defgeneric document-highlight-using-contributors (workspace document contexts contributors))
+
+(defgeneric document-highlight-contributions (workspace document context contributor)
+  (:argument-precedence-order contributor context document workspace)
+  (:method ((workspace t) (document t) (context t) (contributor t))
+    '()))
+
+;;; Default behavior
+
+(defmethod document-highlight-using-contributors ((workspace    t)
+                                                  (document     t)
+                                                  (contexts     list)
+                                                  (contributors list))
+  (flet ((one-contributor (contributor context)
+           (with-simple-restart
+               (continue "~@<Skip document highlight contributor ~A in context ~A.~@:>"
+                         contributor context)
+             (document-highlight-contributions
+              workspace document context contributor))))
+    (flatten (map-product #'one-contributor contributors contexts))))
+
 ;;; Completion contributor protocol
 
 (defgeneric completions-using-contributors (workspace document contexts contributors))

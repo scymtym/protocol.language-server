@@ -73,6 +73,26 @@
     (signatures-using-contributors
      workspace document contexts (signature-contributors document))))
 
+;;; `document-highlight-contributors-mixin'
+
+(defclass document-highlight-contributors-mixin ()
+  ((%document-highlight-conributors :reader document-highlight-contributors
+                                    :writer (setf %document-highlight-conributors))))
+
+(defmethod initialize-instance :after
+    ((instance document-highlight-contributors-mixin)
+     &key
+     (document-highlight-contributors (make-contributors instance 'document-highlight)))
+  (setf (%document-highlight-conributors instance) document-highlight-contributors))
+
+(defmethod methods:highlight-in-document ((workspace t)
+                                          (document  document-highlight-contributors-mixin)
+                                          (version   t)
+                                          (position  t))
+  (let ((contexts (contexts workspace document position))) ; TODO version
+    (document-highlight-using-contributors
+     workspace document contexts (document-highlight-contributors document))))
+
 ;;; `completion-contributors-mixin'
 
 (defclass completion-contributors-mixin ()

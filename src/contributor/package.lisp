@@ -38,6 +38,13 @@
    #:signatures-using-contributors
    #:signature-contributions)
 
+  ;; Document highlight contributor protocol
+  (:export
+   #:document-highlight ; name of the aspect
+
+   #:document-highlight-using-contributors
+   #:document-highlight-contributions)
+
   ;; Completion contributor protocol
   (:export
    #:completion
