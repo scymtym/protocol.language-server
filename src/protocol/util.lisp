@@ -33,7 +33,10 @@
                        ,unparse-name))
        (defun ,unparse-name (name)
          (ecase name
-           ,@names-and-values)))))
+           ,@names-and-values))
+
+       (defmethod parse ((value t) (message-class (eql ',name)))
+         (,parse-name value)))))
 
 ;;; Message classes
 
@@ -50,12 +53,16 @@
               ,@(remove-from-plist args :initarg :type :reader :property))))
          (slots (map 'list (compose #'expand #'ensure-list) slots))
          ((&flet+ slot->slot ((name &rest args &key type &allow-other-keys))
-            (let ((type (typecase type
-                          ((cons (eql list-of))
-                           `(or null (cons ,(second type))))
-                          (t
-                           type))))
-              `(,name :type ,type ,@(remove-from-plist args :type :property)))))
+            (let+ (((&labels type->slot-type (type)
+                      (typecase type
+                        ((cons (eql or) (cons (eql null)))
+                         `(or null ,(type->slot-type (third type))))
+                        ((cons (eql list-of))
+                         `(or null (cons ,(second type))))
+                        (t
+                         type)))))
+              `(,name :type ,(type->slot-type type)
+                ,@(remove-from-plist args :type :property)))))
          ((&flet+ slot->default-initarg
               ((&ign &key
                      initarg
@@ -68,24 +75,49 @@
          ((&flet+ slot->initarg ((name &key initarg &allow-other-keys))
             (list initarg name)))
          ((&flet+ slot->parse ((name &key initarg type property &allow-other-keys))
-            (let+ (((&flet parser (type)
+            (let+ (((&labels expected-type (type)
+                      (cond ((typep type '(cons (eql list-of)))
+                             'list)
+                            ((typep type '(cons (eql or)))
+                             `(or ,@(map 'list #'expected-type (rest type))))
+                            ((eq type 'boolean)
+                             `(or (eql t) (eql +false+)))
+                            ((or (eq type t)
+                                 (subtypep type '(or boolean integer float string)))
+                             type)
+                            (t
+                             t))))
+                   ((&flet parser (type)
                       (typecase type
                         ((member string) nil)
                         (t               `(rcurry #'parse ',type)))))
-                   ((&flet parse-value (value-form)
-                      (cond
-                        ((typep type '(cons (eql list-of)))
-                         (if-let ((parser (parser (second type))))
-                           `(map 'list ,parser ,value-form)
-                           `(coerce ,value-form 'list)))
-                        ((eq type 'boolean)
-                         `(if ,value-form t +false+))
-                        ((or (eq type t)
-                             (subtypep type '(or boolean integer float string)))
-                         value-form)
-                        (t
-                         `(funcall ,(parser type) ,value-form))))))
-              (list initarg (parse-value `(expect-property data ,property ',type))))))
+                   ((&flet parse-value (value-form &optional (type type))
+                      (cond ((typep type '(cons (eql list-of)))
+                             (if-let ((parser (parser (second type))))
+                               `(map 'list ,parser ,value-form)
+                               `(coerce ,value-form 'list)))
+                            ((eq type 'boolean)
+                             `(not (eq ,value-form +false+)))
+                            ((or (eq type t)
+                                 (subtypep type '(or integer float string)))
+                             value-form)
+                            (t
+                             `(funcall ,(parser type) ,value-form)))))
+                   ((&flet parse ()
+                      (cond ((typep type '(cons (eql or) (cons (eql null))))
+                             (let ((non-null-type (third type)))
+                               `(let+ (((&values value value?)
+                                        (maybe-property
+                                         data ,property
+                                         ',(expected-type non-null-type))))
+                                 (if value?
+                                     ,(parse-value 'value non-null-type)
+                                     nil))))
+                            (t
+                             (parse-value
+                              `(expect-property
+                                data ,property ',(expected-type type))))))))
+              (list initarg (parse)))))
          ((&flet+ slot->unparse ((name &key type reader property &allow-other-keys))
             (let+ (((&flet unparser (type)
                       (cond ((eq type 'string)
@@ -103,7 +135,7 @@
                         ((eq type 'boolean)
                          `(if ,value-form t +false+))
                         ((or (eq type t)
-                             (subtypep type '(or boolean integer float string)))
+                             (subtypep type '(or integer float string)))
                          value-form)
                         (t
                          `(,(unparser type) ,value-form)))))
