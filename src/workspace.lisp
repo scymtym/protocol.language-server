@@ -103,12 +103,6 @@
     (assert (eq (puri:uri-scheme uri) :file))
     (pathname (puri:uri-path uri))))
 
-(defmethod root-path ((workspace root-uri-mixin))
-  (namestring (root-directory workspace)))
-
-(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
-                            (function root-path :replacement root-directory)))
-
 ;;; `standard-workpace'
 
 (defclass standard-workspace (workspace
