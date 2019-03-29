@@ -71,12 +71,12 @@
                    (with-simple-restart
                        (continue "~@<Skip hover contributor ~A in context ~A.~@:>"
                                  contributor context)
-                     (let+ (((&values contents range) ; TODO multiple ranges? TODO should contributor return `proto:hover-result's and we merge them here?
+                     (let+ (((&values contents range title) ; TODO multiple ranges? TODO should contributor return `proto:hover-result's and we merge them here?
                              (hover-contribution workspace document context contributor)))
                        (when contents
                          (when (not result-range) ; TODO if both, compare somehow
                            (setf result-range range))
-                         (appendf result-contents (ensure-list contents))))))
+                         (appendf result-contents (ensure-list (format nil "~@[## ~A~2%~]~A" title contents)))))))
                  contributors contexts)
     (when result-contents
       (proto:make-hover-result result-contents
