@@ -128,9 +128,8 @@
                                (document  definition-contributors-mixin)
                                (position  t))
   (let ((contexts (contexts workspace document position)))
-    ;; TODO maybe try to take the most specific location
-    (first (definitions-using-contributors
-            workspace document contexts (definition-contributors document)))))
+    (definitions-using-contributors
+     workspace document contexts (definition-contributors document))))
 
 ;;; `reference-contributors-mixin'
 
