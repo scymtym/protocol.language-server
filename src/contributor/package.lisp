@@ -84,6 +84,9 @@
    #:signature-contributors-mixin
    #:signature-contributors
 
+   #:document-highlight-contributors-mixin
+   #:document-highlight-contributors
+
    #:completion-contributors-mixin
    #:completion-contributors
 
