@@ -43,17 +43,15 @@
               (values (as-keyword (subseq method (1+ index)))
                       (as-keyword (subseq method 0 index)))
               (values (as-keyword method)))))
-    (cond
-      ((eq interface/symbol :$) ; TODO used for cancel?
-       (error "No implemented"))
-      ((and interface/symbol method/symbol)
-       (log:warn interface/symbol method/symbol args)
-       (apply #'process-interface-method
-              object interface/symbol method/symbol args))
-      (method/symbol
-       (apply #'process-method object method/symbol args))
-      (t
-       (error "No such method: \"~A\"." method)))))
+    (cond ((eq interface/symbol :$) ; TODO used for cancel?
+           (error "No implemented"))
+          ((and interface/symbol method/symbol)
+           (apply #'process-interface-method
+                  object interface/symbol method/symbol args))
+          (method/symbol
+           (apply #'process-method object method/symbol args))
+          (t
+           (error "No such method: \"~A\"." method)))))
 
 (defmethod process-interface-method ((object    context)
                                      (interface t)
