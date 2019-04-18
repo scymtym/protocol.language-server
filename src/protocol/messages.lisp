@@ -237,6 +237,14 @@
 (defun unparse-location (location)
   (unparse location))
 
+;;; Location link type
+
+(define-message-class location-link (origin-selection-range target-uri target-range target-selection-range)
+  ((origin-selection-range :type (or null text.source-location:range))
+   (target-uri             :type string)
+   (target-range           :type text.source-location:range)
+   (target-selection-range :type text.source-location:range)))
+
 ;;;
 
 (define-message-class versioned-text-document-identifier (uri version)

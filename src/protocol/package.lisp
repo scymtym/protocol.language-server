@@ -27,6 +27,16 @@
    #:parse-text-document
    #:parse-text-document-content-change)
 
+  ;; Location link
+  (:export
+   #:origin-selection-range
+   #:target-uri
+   #:target-range
+   #:target-selection-range
+
+   #:location-link
+   #:make-location-link)
+
   ;; Edit
   (:export
    #:range
