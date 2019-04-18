@@ -14,8 +14,8 @@
 ;;; `document-container-mixin'
 
 (defclass document-container-mixin ()
-  ((documents :reader   %documents
-              :initform (make-hash-table :test #'equal))))
+  ((%documents :reader   %documents
+               :initform (make-hash-table :test #'equal))))
 
 (defmethod print-items:print-items append ((object document-container-mixin))
   `((:document-count ,(document-count object) " ~D document~:P")))
