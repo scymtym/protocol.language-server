@@ -79,8 +79,10 @@
   (let* ((position (text.source-location::attach-text
                     (proto:parse position 'position) (text object)))
          (result   (methods:definition *workspace* object position)))
-    (when result
-      (proto:unparse result))))
+    (typecase result
+      (null nil)
+      (list (map 'vector #'proto:unparse result))
+      (t    (proto:unparse result)))))
 
 (defmethod process-method ((object document)
                            (method (eql :references))
@@ -107,7 +109,7 @@
                            (method (eql :documentsymbol))
                            &key)
   ;; symbolinformation array or null
-  (map 'vector #'proto:unparse (methods:symbols nil object)))
+  (map 'vector #'proto:unparse (methods:symbols *workspace* object)))
 
 (defmethod process-method ((object document)
                            (method (eql :codeaction))
