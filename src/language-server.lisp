@@ -60,7 +60,7 @@
                                  (sb-debug:print-backtrace :stream stream))))))
         (uiop:symbol-call '#:protocol.language-server.visual-analyzer '#:note-context context))))
 
-  (let+ (((&values id method arguments message) (conn:read-message connection))
+  (let+ (((&values message id method arguments) (conn:read-message connection))
          (diagnostics (make-hash-table :test #'eq))
          ((&values result condition backtrace)
           (restart-case
