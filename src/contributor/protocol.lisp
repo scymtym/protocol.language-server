@@ -206,6 +206,33 @@
              (reference-contributions workspace document context contributor))))
     (flatten (map-product #'one-contributor contributors contexts))))
 
+;;; Code action contributor protocol
+
+(defgeneric code-actions-using-contributors
+    (workspace document range context contributors))
+
+(defgeneric code-action-contributions
+    (workspace document range context contributor)
+  (:argument-precedence-order contributor context range document workspace)
+  (:method ((workspace t) (document t) (range t) (context t) (contributor t))
+    '()))
+
+;;; Default behavior
+
+(defmethod code-actions-using-contributors ((workspace    t)
+                                            (document     t)
+                                            (range        t)
+                                            (context      t)
+                                            (contributors list))
+  (flet ((one-contributor (contributor)
+           (with-simple-restart
+               (continue "~@<Skip code action contributor ~A for range ~
+                          ~A and context ~A.~@:>"
+                         contributor range context)
+             (code-action-contributions
+              workspace document range context contributor))))
+    (mappend #'one-contributor contributors)))
+
 ;;; Contributor creation protocol
 
 (defgeneric make-contributors (document aspect)

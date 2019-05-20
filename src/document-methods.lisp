@@ -118,7 +118,7 @@
                            context)
   (let* ((range   (text.source-location::attach-text
                    (proto:parse range 'text.source-location:range) (text object)))
-         (actions (methods:code-actions nil object range context)))
+         (actions (methods:code-actions *workspace* object range context)))
     (map 'vector #'proto::unparse actions)))
 
 (defmethod process-method ((object document)

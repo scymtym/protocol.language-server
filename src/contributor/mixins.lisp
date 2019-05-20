@@ -151,3 +151,22 @@
   (let ((contexts (contexts workspace document position)))
     (references-using-contributors
      workspace document contexts (reference-contributors document))))
+
+;;; `code-action-contributors-mixin'
+
+(defclass code-action-contributors-mixin ()
+  ((%code-action-contributors :reader code-action-contributors
+                              :writer (setf %code-action-contributors))))
+
+(defmethod initialize-instance :after
+    ((instance code-action-contributors-mixin)
+     &key
+     (code-action-contributors (make-contributors instance 'code-action)))
+  (setf (%code-action-contributors instance) code-action-contributors))
+
+(defmethod methods:code-actions ((workspace t)
+                                 (document  code-action-contributors-mixin)
+                                 (range     t)
+                                 (context   t))
+  (code-actions-using-contributors
+   workspace document range context (code-action-contributors document)))

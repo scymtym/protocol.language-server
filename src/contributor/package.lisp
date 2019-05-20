@@ -66,6 +66,13 @@
    #:references-using-contributors
    #:reference-contributions)
 
+  ;; Code action contributor protocol
+  (:export
+   #:code-action
+
+   #:code-actions-using-contributors
+   #:code-action-contributions)
+
   ;; Contributor creation protocol
   (:export
    #:make-contributors)
@@ -94,4 +101,7 @@
    #:definition-contributors
 
    #:reference-contributors-mixin
-   #:reference-contributors))
+   #:reference-contributors
+
+   #:code-action-contributors-mixin
+   #:code-action-contributors))
