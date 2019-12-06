@@ -1,3 +1,9 @@
+;;;; protocol.lisp --- Protocol functions provided by the contributor module..
+;;;;
+;;;; Copyright (C) 2017, 2018, 2019 Jan Moringen
+;;;;
+;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+
 (cl:in-package #:protocol.language-server.contributor)
 
 ;;; Diagnostics contributor protocol
@@ -16,7 +22,9 @@
 
 (defgeneric diagnostics-contributions (workspace document contributor)
   (:documentation
-   "Return CONTRIBUTOR's diagnostics for DOCUMENT."))
+   "Return CONTRIBUTOR's diagnostics for DOCUMENT in WORKSPACE.
+
+    "))
 
 ;;; Default behavior
 
@@ -232,6 +240,16 @@
              (code-action-contributions
               workspace document range context contributor))))
     (mappend #'one-contributor contributors)))
+
+;;; Contributor lookup protocol
+
+(defgeneric contributors (aspect document)
+  (:documentation
+   "Return the LIST of contributors for ASPECT in DOCUMENT."))
+
+(defgeneric (setf contributors) (new-value aspect document)
+  (:documentation
+   "Install NEW-VALUE as the LIST of contributors for ASPECT in DOCUMENT."))
 
 ;;; Contributor creation protocol
 

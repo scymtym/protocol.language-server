@@ -1,5 +1,19 @@
 (cl:in-package #:protocol.language-server.contributor)
 
+;;; `contributor-storage-mixin'
+
+(defclass contributor-storage-mixin ()
+  ((%contributors :reader   %contributors
+                  :initform (make-hash-table :test #'eq))))
+
+(defmethod contributors ((aspect t) (container contributor-storage-mixin))
+  (gethash aspect (%contributors container)))
+
+(defmethod (setf contributors) ((new-value t)
+                                (aspect    t)
+                                (container contributor-storage-mixin))
+  (setf (gethash aspect (%contributors container)) new-value))
+
 ;;; `diagnostics-contributors-mixin'
 
 (defclass diagnostics-contributors-mixin ()

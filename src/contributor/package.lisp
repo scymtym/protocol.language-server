@@ -1,3 +1,9 @@
+;;;; package.lisp --- Package definition for the contributor module..
+;;;;
+;;;; Copyright (C) 2017, 2018, 2019 Jan Moringen
+;;;;
+;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+
 (cl:defpackage #:protocol.language-server.contributor
   (:use
    #:cl
@@ -10,7 +16,7 @@
 
   ;; Diagnostics contributor protocol
   (:export
-   #:diagnostic ; name of the aspect
+   #:diagnostic                         ; name of the aspect
 
    #:diagnostics
    #:diagnostics-using-contributors
@@ -18,7 +24,7 @@
 
   ;; Context contributor protocol
   (:export
-   #:context ; name of the aspect
+   #:context                            ; name of the aspect
 
    #:contexts
    #:contexts-using-contributors
@@ -26,21 +32,21 @@
 
   ;; Hover contributor protocol
   (:export
-   #:hover ; name of the aspect
+   #:hover                              ; name of the aspect
 
    #:hover-using-contributors
    #:hover-contribution)
 
   ;; Signature contributor protocol
   (:export
-   #:signature ; name of the aspect
+   #:signature                          ; name of the aspect
 
    #:signatures-using-contributors
    #:signature-contributions)
 
   ;; Document highlight contributor protocol
   (:export
-   #:document-highlight ; name of the aspect
+   #:document-highlight                 ; name of the aspect
 
    #:document-highlight-using-contributors
    #:document-highlight-contributions)
@@ -54,14 +60,14 @@
 
   ;; Definition contributor protocol
   (:export
-   #:definition ; name of the aspect
+   #:definition                         ; name of the aspect
 
    #:definitions-using-contributors
    #:definition-contributions)
 
   ;; Reference contributor protocol
   (:export
-   #:reference ; name of the aspect
+   #:reference                          ; name of the aspect
 
    #:references-using-contributors
    #:reference-contributions)
