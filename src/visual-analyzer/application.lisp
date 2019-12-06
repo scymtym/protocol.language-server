@@ -1,39 +1,97 @@
 (cl:in-package #:protocol.language-server.visual-analyzer)
 
+(clim:define-command-table visual-analyzer
+  :inherit-from (clouseau:inspector-command-table))
+
 (clim:define-application-frame visualizer ()
   ((%trace :initarg  :trace
            :reader   trace))
   (:panes
-   ; (auto-scroll clim:toggle-button)
-   (trace      trace-pane)
-   (interactor :interactor))
+   (context     (let ((pane  (clim:make-pane 'clouseau:inspector-pane))
+                      (trace (trace clim:*application-frame*)))
+                  (push (lambda (&rest event)
+                          (destructuring-case event
+                            ((:context-changed new-context)
+                             (setf (clouseau:root-object
+                                    pane :run-hook-p :if-changed)
+                                   new-context))))
+                        (change-hook trace))
+                  pane))
+   (context2    (let ((pane  (clim:make-pane 'clouseau::inspector-pane))
+                      (trace (trace clim:*application-frame*)))
+                  (push (lambda (&rest event)
+                          (destructuring-case event
+                            ((:context2-changed new-context)
+                             (setf (clouseau:root-object
+                                    pane :run-hook-p :if-changed)
+                                   new-context))))
+                        (change-hook trace))
+                  pane))
+
+   (auto-scroll clim:toggle-button
+                :label "Scroll on event")
+   (filter      clim:push-button
+                :label "Filter")
+   (trace       trace-pane
+                :trace (trace clim:*application-frame*))
+
+   (interactor  :interactor))
   (:layouts
-   (default
-    (clim:vertically ()
+   (all
+    (clim:vertically (:width 900)
+      (:fill (clim:horizontally ()
+               (clim:vertically ()
+                 (clim:scrolling () context)
+                 (clim:make-pane 'clime:box-adjuster-gadget)
+                 (clim:scrolling () context2))
+               (clim:make-pane 'clime:box-adjuster-gadget)
+               (clim:vertically ()
+                 (clim:horizontally ()
+                   auto-scroll
+                   filter)
+                 (:fill (clim:scrolling () trace)))))
+      (clim:make-pane 'clime:box-adjuster-gadget)
+                     (1/16  interactor)))
+   (inspector
+    (clim:vertically (:width 900)
+      (:fill (clim:scrolling () context))
+      (clim:make-pane 'clime:box-adjuster-gadget)
+      (1/16  interactor)))
+   (trace
+    (clim:vertically (:width 900)
       (:fill (clim:vertically ()
-                              ;; auto-scroll
-               (clim:scrolling () trace)))
+               (clim:horizontally ()
+                 auto-scroll
+                 filter)
+               (:fill (clim:scrolling () trace))))
+      (clim:make-pane 'clime:box-adjuster-gadget)
       (1/16  interactor))))
+  (:menu-bar nil)
   (:pointer-documentation t)
+
+  (:command-table   (application :inherit-from (visual-analyzer)))
+  (:command-definer nil)
+
   (:default-initargs
    :title  "Protocol Analyzer"
    :width  900
    :height 800))
 
-(defmethod clim:layout-frame :after ((frame visualizer) &optional width height)
-  (let ((auto-scroll (clim:find-pane-named frame 'auto-scroll))
-        (trace       (clim:find-pane-named frame 'trace)))
-    (setf (%trace trace) (trace frame))
-    #+no (reinitialize-instance
-     auto-scroll
-     :value-changed-callback (lambda (value)
-                               (setf (auto-scroll? trace) value)))))
+(defmethod clim:frame-standard-output ((frame visualizer))
+  (clim:find-pane-named frame 'interactor))
 
-(define-visualizer-command (clear :name "Clear") ()
+(defmethod clim:layout-frame :after ((frame visualizer) &optional width height)
+  (declare (ignore width height))
+  )
+
+(clim:define-command (com-clear :name          "Clear"
+                                :command-table visual-analyzer)
+    ()
   (let ((trace-pane (clim:find-pane-named clim:*application-frame* 'trace)))
     (clear! trace-pane)))
 
-(define-visualizer-command (com-set-filter :name "Filter")
+(clim:define-command (com-set-filter :name          "Filter"
+                                     :command-table visual-analyzer)
     ((expression '(or (member :client->server :server->client)
                       string
                       clim:form)))
@@ -53,19 +111,30 @@
                                                     (matching-request? (message request)))))))))
             (t                     (compile nil `(lambda (cl-user::event) ,expression)))))))
 
-(define-visualizer-command foo ((event event))
+(clim:define-command (foo :command-table visual-analyzer)
+    ((event event))
   )
 
 (clim:define-presentation-to-command-translator
-    event->foo (event foo visualizer) (object)
+    event->foo (event foo visual-analyzer) (object)
   (list object))
 
-(define-visualizer-command inspect ((object t))
-  (uiop:symbol-call '#:clouseau '#:inspector object :new-process t))
+(clim:define-command (inspect :name          "Inspect"
+                              :command-table visual-analyzer)
+    ((object trace-element :gesture :select))
+  (clouseau:inspect object :new-process t))
 
-(clim:define-presentation-to-command-translator
-    document->inspect (document inspect visualizer) (object)
-  (list object))
+(macrolet ((define (layout keystroke)
+             (let ((name (symbolicate 'com-set-layout- layout)))
+               `(clim:define-command (,name :command-table application
+                                            :name          t
+                                            :keystroke     ,keystroke)
+                    ()
+                  (setf (clim:frame-current-layout clim:*application-frame*)
+                        ',layout)))))
+  (define all       (#\1 :control))
+  (define inspector (#\2 :control))
+  (define trace     (#\3 :control)))
 
 ;;;
 
@@ -75,6 +144,10 @@
 (defun note-context (context)
   (when-let ((trace *trace*))
     (setf (context trace) context)))
+
+(defun note-contrib-context (context)
+  (when-let ((trace *trace*))
+    (run-hook trace :context2-changed context)))
 
 (defun add-message (direction message &key backtrace)
   (when-let ((trace *trace*))
@@ -101,11 +174,11 @@
 ;; (defun add-server->client-message (message)
 ;;   (%add-event 'server->client-message message))
 
-(defun start ()
-  (let* ((trace (or *trace* (make-instance 'trace)))
-         (frame (clim:make-application-frame 'visualizer :trace trace)))
+(defun run-visualizer (&key (trace       (or *trace* (make-instance 'trace)))
+                            (new-process t))
+  (let ((frame (clim:make-application-frame 'visualizer :trace trace)))
     (setf *trace* trace *visualizer* frame)
-    (bt:make-thread (lambda ()
-                      (clim:run-frame-top-level frame)))))
-
-(uiop:register-image-restore-hook 'start nil)
+    (if new-process
+        (bt:make-thread (lambda ()
+                          (clim:run-frame-top-level frame)))
+        (clim:run-frame-top-level frame))))

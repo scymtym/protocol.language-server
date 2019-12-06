@@ -1,3 +1,8 @@
+;;;;
+;;;; Copyright (C) 2017, 2018, 2019 Jan Moringen
+;;;;
+;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+
 (cl:in-package #:protocol.language-server.visual-analyzer)
 
 (clim:define-presentation-type trace-element ())
@@ -83,8 +88,12 @@
               :padding              10
               :radius               16
               :radius-left          0
-              :background           clim:+white+
-              :highlight-background clim:+lightgray+
+              :background           (clim:compose-over
+                                     (clim:compose-in clim:+gray50+ (clim:make-opacity .1))
+                                     (clime:indirect-ink-ink clim:+background-ink+))
+              :highlight-background (clim:compose-over
+                                     (clim:compose-in clim:+gray50+ (clim:make-opacity .2))
+                                     (clime:indirect-ink-ink clim:+background-ink+))
               :shadow               clim:+darkgray+)
     (clim:present "request" 'message-kind :stream stream :view view)
     (write-string " " stream)
@@ -96,7 +105,7 @@
 
 (clim:define-presentation-method clim:present ((object con:response)
                                                (type   message)
-                                               stream
+                                               (stream clim:extended-output-stream)
                                                view
                                                &key)
   (clim:surrounding-output-with-border
@@ -104,8 +113,12 @@
               :padding              10
               :radius               16
               :radius-right         0
-              :background           clim:+white+
-              :highlight-background clim:+lightgray+
+              :background           (clim:compose-over
+                                     (clim:compose-in clim:+gray50+ (clim:make-opacity .1))
+                                     (clime:indirect-ink-ink clim:+background-ink+))
+              :highlight-background (clim:compose-over
+                                     (clim:compose-in clim:+gray50+ (clim:make-opacity .2))
+                                     (clime:indirect-ink-ink clim:+background-ink+))
               :shadow               clim:+darkgray+)
     (clim:present "response" 'message-kind :stream stream :view view)
     (write-string " " stream)
@@ -124,7 +137,9 @@
               :radius               16
               :radius-left          0
               :radius-bottom        0
-              :background           clim:+lightpink+
+              :background           (clim:compose-over
+                                     (clim:compose-in clim:+red+ (clim:make-opacity .1))
+                                     clim:+background-ink+)
               :highlight-background clim:+lightgray+
               :shadow               clim:+darkgray+)
     (clim:present "error" 'message-kind :stream stream :view view)
@@ -164,12 +179,29 @@
     (clim:present "debug" 'message-kind :stream stream :view view)
     (terpri)
     (let ((message (message object)))
-      (if (consp message)
-          (clim:formatting-item-list (stream)
-            (dolist (element message)
-              (clim:formatting-cell (stream)
-                (clim:present element 'document :stream stream :view view))))
-          (clim:present message 'document :stream stream :view view)))))
+      (typecase message
+        #+no (protocol.language-server::request-timing
+         (clim:with-output-as-presentation (stream message 'document)
+           (clim:formatting-table (stream)
+             (loop :with events = (sort (copy-list (protocol.language-server::events message)) #'<
+                                        :key #'cdr)
+                   :for ((kind . name) . time) :in events
+                   :when (eq kind :end)
+                   :do (clim:formatting-row (stream)
+                         (clim:formatting-cell (stream)
+                           (princ name stream))
+                         (clim:formatting-cell (stream :align-x :right)
+                           (format stream "~/text.orders-of-magnitude:print-human-readable-duration/~%"
+                                   (/ (- (assoc-value events (cons :start name) :test #'equal)
+                                         time)
+                                      internal-time-units-per-second))))))))
+        (cons
+         (clim:formatting-item-list (stream)
+           (dolist (element message)
+             (clim:formatting-cell (stream)
+               (clim:present element 'document :stream stream :view view)))))
+        (t
+         (clim:present message 'document :stream stream :view view))))))
 
 (defun display-event (event stream)
   (clim:present event 'event :stream stream))
@@ -198,6 +230,21 @@
                                (amount   (- (clim:bounding-rectangle-height history)
                                             (clim:bounding-rectangle-height (or viewport pane)))))
                           (clim:scroll-extent pane 0 (max 0 amount)))))
+
+;;; `event-output-record'
+
+(defclass event-output-record (clim:standard-sequence-output-record)
+  ((%event :initarg :event
+           :reader  event)))
+
+(defmethod clim:replay-output-record
+    :around ((record event-output-record)
+             (stream clim:extended-output-stream)
+             &optional region offset-x offset-y)
+  (setf (clim:output-record-position record)
+        (values (position-for-added-event stream (event record) record)
+                (clim:bounding-rectangle-min-y record)))
+  (call-next-method record stream (clim:region-union region record) offset-x offset-y))
 
 ;;; Thanks to jackdaniel in #clim
 (defparameter *grid*
@@ -269,7 +316,7 @@
 
 (defmethod add-event! ((container trace-pane) (event t))
   (let ((history (clim:stream-output-history container))
-        (record  (clim:with-output-to-output-record (container)
+        (record  (clim:with-output-to-output-record (container 'event-output-record record :event event)
                    (display-event event container))))
     (setf (clim:output-record-position record)
           (position-for-added-event container event record))

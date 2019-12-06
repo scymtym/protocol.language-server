@@ -14,4 +14,7 @@
   (:shadow
    #:trace
    #:inspect
-   #:backtrace))
+   #:backtrace)
+
+  (:export
+   #:run-visualizer))

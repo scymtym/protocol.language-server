@@ -21,7 +21,8 @@
      &key
      (start-column 0)
      end-column
-     line-number-width)
+     line-number-width
+     highlight?)
   (format stream "~A" content))
 
 (defmethod text.source-location.print:print-line-annotations-using-style

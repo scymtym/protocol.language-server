@@ -128,7 +128,7 @@
                                                      'sloc:location
                                                      :source (sloc:make-source (lsp:text document))
                                                      :range  range)
-                                                    "here")))
+                                                    "range")))
                                   (when position
                                     (list :position* position
                                           :snippet   (sloc:make-annotation
@@ -136,7 +136,7 @@
                                                        (lsp:text document)
                                                        index
                                                        (1+ index))
-                                                      "here"))))))
+                                                      "position"))))))
           (reinitialize-instance message :arguments arguments))
         nil)
       (call-next-method)))
