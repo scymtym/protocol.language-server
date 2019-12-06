@@ -18,7 +18,7 @@
   (setf (%workspace object)          (make-workspace object #|later process-id|# root-uri root-path
                                         ; later capabilities initialization-options
                                                      )
-        (client-capabilities object) capabilities)
+        (client-capabilities object) (proto:parse capabilities 'proto::client-capabilities))
   ;; Compute capabilities and send as reply.
   `((:capabilities . ,(proto:unparse (server-capabilities object)))))
 
