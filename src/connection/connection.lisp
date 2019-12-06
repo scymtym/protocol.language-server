@@ -13,12 +13,12 @@
   (define %output-stream-p output-stream-p))
 
 (defclass connection ()
-  ((input  :initarg  :input
-           :type     (and stream (satisfies %input-stream-p))
-           :reader   input)
-   (output :initarg  :output
-           :type     (and stream (satisfies %output-stream-p))
-           :reader   output))
+  ((%input  :initarg  :input
+            :type     (and stream (satisfies %input-stream-p))
+            :reader   input)
+   (%output :initarg  :output
+            :type     (and stream (satisfies %output-stream-p))
+            :reader   output))
   (:default-initargs
    :input  (cl:error "missing initarg :input")
    :output (cl:error "missing initarg :output")))
@@ -65,45 +65,3 @@
   (ignore-errors (submit-to-visual-analyzer :server->client message))
   (let ((raw (json:encode-json-to-string (to-alist message))))
     (transport:write-message (output connection) raw)))
-
-;;; Deprecated
-
-(defmethod read-request ((connection connection))
-  (let+ (((&values message id method arguments) (read-message connection)))
-    (values id method arguments message)))
-
-(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
-                            (function read-request :replacement read-message)))
-
-(defmethod write-response ((connection connection) (id t) (payload t))
-  (let* (#+no (response (make-response id `(:result . ,payload)))
-         #+no (raw      (json:encode-json-to-string response)))
-    (log:info "~@<<= [~D] Response~@:_~
-               ~2@T~@<~/protocol.language-server.connection::print-maybe-alist/~:>~:>"
-              id payload)
-    (write-message connection (make-response id payload))))
-
-(defmethod write-response ((connection connection) (id t) (payload condition))
-  (let* ((message  (princ-to-string payload))
-         (payload  `(:error . ((:code    . 0) ; TODO code. search for "ErrorCodes" in spec
-                               (:message . ,message))))
-         #+no (response (make-response id payload))
-         #+no (raw      (json:encode-json-to-string response)))
-    (log:info "~@<<= [~D] Error Response~@:_~
-               ~2@T~@<~/protocol.language-server.connection::print-maybe-alist/~:>~:>"
-              id payload)
-    (write-message connection (make-response id payload))))
-
-(defmethod write-notification ((connection connection) (method string) (payload t))
-  (let* ((notification `((:jsonrpc . "2.0")
-                         (:method  . ,method)
-                         (:params  . ,payload)))
-         (raw          (json:encode-json-to-string notification)))
-    (log:info "~@<<=     Notification ~A~@:_~
-               ~2@T~@<~/protocol.language-server.connection::print-maybe-alist/~:>~:>"
-              method payload)
-    (transport:write-message (output connection) raw)))
-
-(declaim (sb-ext:deprecated :early ("protocol.language-server" "0.1")
-                            (function write-response     :replacement write-message)
-                            (function write-notification :replacement write-message)))

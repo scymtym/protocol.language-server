@@ -1,6 +1,12 @@
+;;;; messages.lisp --- Message classes for the connection module.
+;;;;
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
+;;;;
+;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+
 (cl:in-package #:protocol.language-server.connection)
 
-;;;
+;;; `message'
 
 (defclass message (print-items:print-items-mixin)
   ())

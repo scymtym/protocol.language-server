@@ -1,3 +1,9 @@
+;;;; util.lisp --- Utilities used in the connection module.
+;;;;
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
+;;;;
+;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
+
 (cl:in-package #:protocol.language-server.connection)
 
 (defun print-maybe-alist (stream object &optional colon? at?)

@@ -1,6 +1,6 @@
 ;;;; package.lisp --- Package definition for the connection module.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -28,27 +28,23 @@
    #:code
    #:message
    #:backtrace
-
    #:make-error
 
    #:call-message
    #:method
    #:arguments
 
-   #:make-request
-
    #:notification
-
    #:make-notification
 
    #:id-message
    #:id
 
    #:request
+   #:make-request
 
    #:response
    #:result
-
    #:make-response)
 
   ;; Connection protocol
@@ -58,10 +54,4 @@
 
   ;; Connection construction
   (:export
-   #:make-connection)
-
-  ;; Deprecated
-  (:export
-   #:read-request
-   #:write-response
-   #:write-notification))
+   #:make-connection))
