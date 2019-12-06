@@ -24,16 +24,19 @@
                          :initform nil)))
 
 (defun make-context (connection
-                     &key
+                     &rest args &key
                      (class           'context)
                      (capabilities    '())
-                     (workspace-class nil workspace-class-supplied?))
+                     (workspace-class nil workspace-class-supplied?)
+                     &allow-other-keys)
   (let ((capabilities (apply #'proto::make-server-capabilities capabilities)))
     (apply #'make-instance class
            :connection          connection
            :server-capabilities capabilities
-           (when workspace-class-supplied?
-             (list :workspace-class workspace-class)))))
+           (append (when workspace-class-supplied?
+                     (list :workspace-class workspace-class))
+                   (remove-from-plist
+                    args :class :capabilities :workspace-class)))))
 
 (defmethod make-workspace ((context   context)
                            (root-uri  t)
