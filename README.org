@@ -11,24 +11,50 @@
 * STARTED Introduction
 
   The ~protocol.language-server~ library provides a Common Lisp
-  implementation of the server role of the [[https://microsoft.github.io/language-server-protocol/specification][language server
-  protocol]]. To be clear: this library does not implement a language
+  implementation of the server role of the [[https://microsoft.github.io/language-server-protocol/specification][language server protocol]]
+  (LSP). To be clear: this library does not implement a language
   server for Common Lisp, but it could be used to implement one.
 
-* TODO Important Concepts and Glossary
+  The library consists of the following modules
+
+  + ~connection~ ::
+
+  + ~protocol~ :: A collection of classes, instances of which
+                  represent LSP messages and can be parsed
+                  from/unparsed into JSON.
+
+  + ~contributor~ :: An optional module that allows implementing LSP
+                     features such as completion in terms of multiple
+                     independent "contributors".
+
+* STARTED Important Concepts and Glossary
 
   + client :: A program, such as an editor or development environment,
               that opens, changes and manages /documents/ and calls
               out to the /server/ for specific tasks regarding those
               documents such as completion or automatic indentation.
 
-  + server ::
+  + server :: A program that receives /documents/ written in a given
+              (programming) language from a /client/ and provides
+              services such as completion or automatic indentation for
+              the transmitted documents.
 
-  + connection ::
+  + connection :: An established communication mechanism between a
+                  /client/ and a /server/.
 
-  + workspace ::
+                  In the context of this library, /connection/ refers
+                  to the /server/ side of a connection.
 
-  + document ::
+  + workspace :: A collection of /documents/ which are used and
+                 manipulated cooperatively by a /client/ and a
+                 /server/.
+
+  + document :: In the language server protocol, a text conforming to
+                a (programming) language which is used and manipulated
+                cooperatively by a /client/ and a /server/.
+
+                In the context of this library, /document/ refers to
+                the /server/ representation of this concept.
 
 * TODO Tutorial
 
