@@ -33,10 +33,6 @@
   (:documentation
    "Return the root URI of WORKSPACE."))
 
-(defgeneric root-path (workspace)
-  (:documentation
-   "Return the root filesystem path of WORKSPACE."))
-
 ;;; Document protocol
 
 (defgeneric version (document)

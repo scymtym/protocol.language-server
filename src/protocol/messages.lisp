@@ -384,7 +384,7 @@
                   :reader   detail
                   :initform nil)
    (documentation :initarg  :documentation
-                  :type     (or null string)
+                  :type     (or null (or string markup-content))
                   :reader   documentation*
                   :initform nil)
    ;; Replacement text
@@ -471,7 +471,7 @@
    (documentation :type (or null string markup-content))))
 
 (define-message-class signature-information (label parameters &key documentation)
-  ((label :type string)
+  ((label         :type string)
    (documentation :type (or null string markup-content))
    (parameters    :type (list-of parameter-information))))
 
@@ -573,27 +573,42 @@
                 :reader  message)))
 
 (defclass diagnostic ()
-  ((annotation  :initarg :annotation
-                :reader  annotation)
-   (annotations :initarg :annotations
-                :type    (list-of text.source-location::annotation))
-   (message     :initarg :message
-                :reader  message)))
+  ((source      :initarg  :source
+                :type     (or null string)
+                :reader   source
+                :initform nil)
+   (annotation  :initarg  :annotation
+                :reader   annotation)
+   (annotations :initarg  :annotations
+                :type     list ; (list-of text.source-location::annotation)
+                :reader   annotations
+                :initform '())
+   (message     :initarg  :message
+                :reader   message)))
 
-; (defun make-diagnostic )
+(defun make-diagnostic (location severity message &key source annotations)
+  (make-instance 'diagnostic :source      source
+                             :annotation  (text.source-location:make-annotation
+                                           location message :kind severity)
+                             :annotations annotations))
 
 (defun unparse-diagnostic (diagnostic)
-  (etypecase diagnostic
-    (diagnostic
-     (let+ (((&accessors-r/o annotation message) diagnostic))
-       `((:range    . ,(unparse (text.source-location:range annotation)))
-         (:severity . ,(unparse-severity (text.source-location:kind annotation)))
-         (:message  . ,(format nil "~A: ~A"
-                               message (text.source-location:text annotation))))))
-    (text.source-location:annotation
-     `((:range    . ,(unparse (text.source-location:range diagnostic)))
-       (:severity . ,(unparse-severity (text.source-location:kind diagnostic)))
-       (:message  . ,(text.source-location:text diagnostic))))))
+  (flet ((unparse-annotation (annotation)
+           `((:location . ,(unparse (text.source-location:location annotation)))
+             (:message  . ,(text.source-location:text annotation)))))
+    (etypecase diagnostic
+      (diagnostic
+       (let+ (((&accessors-r/o annotation message) diagnostic))
+         `((:range    . ,(unparse (text.source-location:range annotation)))
+           (:severity . ,(unparse-severity (text.source-location:kind annotation)))
+           (:message  . ,(format nil "~A: ~A"
+                                 message (text.source-location:text annotation)))
+           ,@(when-let ((annotations (annotations diagnostic)))
+               `((:related-information . ,(map 'vector #'unparse-annotation annotations)))))))
+      (text.source-location:annotation
+       `((:range    . ,(unparse (text.source-location:range diagnostic)))
+         (:severity . ,(unparse-severity (text.source-location:kind diagnostic)))
+         (:message  . ,(text.source-location:text diagnostic)))))))
 
 ;;; Command
 
@@ -621,7 +636,7 @@
    (kind      :type     code-action-kind)
    ; TODO edit
    (command   :type     command)
-   (arguments :type     (list-of string)
+   #+wrong (arguments :type     (list-of string)
               :initform '())))
 
 ;;; Code Lens
