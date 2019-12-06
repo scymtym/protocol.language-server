@@ -32,19 +32,19 @@
               (process-request connection context))))))
 
 (define-condition diagnostic (condition)
-  ((uri         :initarg :uri
-                :reader  uri
-                :writer  (setf %uri))
-   (diagnostics :initarg :diagnostics
-                :reader  diagnostics)))
+  ((%uri         :initarg :uri
+                 :reader  uri
+                 :writer  (setf %uri))
+   (%diagnostics :initarg :diagnostics
+                 :reader  diagnostics)))
 
 (define-condition message (condition)
-  ((message :initarg :message
-            :reader  message)))
+  ((%message :initarg :message
+             :reader  message)))
 
 (define-condition debug1 (condition)
-  ((message :initarg :message
-            :reader  message)))
+  ((%message :initarg :message
+             :reader  message)))
 
 (defun debug1 (message)
   (signal 'debug1 :message message)

@@ -34,12 +34,13 @@
    #:root-directory
 
    #:workspace
-   #:standard-workspace
-
-   #:root-path) ; deprecated
+   #:standard-workspace)
 
   ;; Document protocol and class
   (:export
+   #:workspace
+
+   #:language
    #:version
    #:text
    #:update
@@ -78,4 +79,5 @@
    #:standard-workspace)
 
   (:export
-   #:language-server))
+   #:language-server
+   #:documents/alist))

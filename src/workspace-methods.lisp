@@ -1,6 +1,6 @@
 ;;;; workspace-methods.lisp --- Adapters for methods of the Workspace interface.
 ;;;;
-;;;; Copyright (C) 2016, 2017, 2018 Jan Moringen
+;;;; Copyright (C) 2016, 2017, 2018, 2019 Jan Moringen
 ;;;;
 ;;;; Author: Jan Moringen <jmoringe@techfak.uni-bielefeld.de>
 
@@ -21,7 +21,7 @@
                                      (method    (eql :didopen))
                                      &key
                                      text-document)
-  (let+ (((&values uri version) (proto:parse-text-document text-document))
+  (let+ (((&values uri version) (proto:parse-text-document text-document)) ; TODO proper message
          (language-id (assoc-value text-document :language-id))
          (language    (make-keyword (string-upcase language-id)))
          (text        (assoc-value text-document :text)))

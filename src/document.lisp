@@ -20,24 +20,24 @@
 
 (defclass document (workspace-member-mixin
                     print-items:print-items-mixin)
-  ((language :initarg  :language
-             :type     keyword
-             :reader   language)
-   (version  :initarg  :version
-             :type     non-negative-integer
-             :reader   version
-             :accessor %version)
-   (text     :type     string
-             :reader   text
-             :writer   (setf %text)
-             :documentation
-             "Stores the current text of the document.")
-   (newlines :type     vector
-             :reader   newlines
-             :initform (make-array 100 :fill-pointer 0 :adjustable t)
-             :documentation
-             "Stores positions of newlines as indices into the string
-              stored in the `text' slot."))
+  ((%language :initarg  :language
+              :type     keyword
+              :reader   language)
+   (%version  :initarg  :version
+              :type     non-negative-integer
+              :reader   version
+              :accessor %version)
+   (%text     :type     string
+              :reader   text
+              :writer   (setf %text)
+              :documentation
+              "Stores the current text of the document.")
+   (%newlines :type     vector
+              :reader   newlines
+              :initform (make-array 100 :fill-pointer 0 :adjustable t)
+              :documentation
+              "Stores positions of newlines as indices into the string
+               stored in the `text' slot."))
   (:default-initargs
    :language (error "missing required initarg :language")
    :version  (error "missing required initarg :version")))
